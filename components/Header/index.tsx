@@ -46,27 +46,32 @@ const Header = () => {
       >
         <div className="container">
           <div className="relative -mx-4 flex items-center justify-between">
-            <div className="w-60 max-w-full px-4 xl:mr-12">
+            <div className="flex w-60 max-w-full items-center px-4 xl:mr-12">
               <Link
                 href="/"
-                className={`header-logo block w-full ${
+                className={`header-logo flex w-full items-center space-x-2 ${
                   sticky ? "py-5 lg:py-2" : "py-8"
-                } `}
+                }`}
               >
                 <Image
-                  src="/images/logo/logo-2.svg"
+                  src="/images/logo/logo-3.png"
                   alt="logo"
                   width={140}
                   height={30}
-                  className="w-full dark:hidden"
+                  className="mr-3 w-full dark:hidden"
+                  style={{ maxHeight: "40px", width: "auto" }}
                 />
                 <Image
-                  src="/images/logo/logo.svg"
+                  src="/images/logo/logo-3.png"
                   alt="logo"
                   width={140}
                   height={30}
-                  className="hidden w-full dark:block"
+                  className="mr-3 hidden w-full dark:block"
+                  style={{ maxHeight: "40px", width: "auto" }}
                 />
+                <span className="text-2xl font-bold text-dark dark:text-white">
+                  Chat<span className="text-green">WithData</span>
+                </span>
               </Link>
             </div>
             <div className="flex w-full items-center justify-between px-4">

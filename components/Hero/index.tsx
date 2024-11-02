@@ -28,7 +28,7 @@ const Hero = () => {
                 <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <Link
                     href="#get-started"
-                    className="rounded-md border-2 border-transparent bg-green py-3 px-8 text-base font-semibold text-white duration-300 ease-in-out hover:border-2 hover:border-green hover:bg-white hover:text-black"
+                    className="py- rounded-md border-2 border-transparent bg-green px-8 text-base font-semibold text-white duration-300 ease-in-out hover:border-2 hover:border-green hover:bg-white hover:text-black"
                   >
                     Get Started
                   </Link>

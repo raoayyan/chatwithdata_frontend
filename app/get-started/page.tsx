@@ -5,30 +5,20 @@ export default function GetStarted() {
   const sqlDatabases = ["MySQL", "PostgreSQL", "SQLite"];
   const noSqlDatabases = ["MongoDB", "Firebase", "Cassandra"];
 
-  // State for modal visibility and content
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState("");
+  const [selectedDatabase, setSelectedDatabase] = useState("");
 
-  // Handler to open modal with database explanation
   const handleExplanationClick = (dbName) => {
-    const explanations = {
-      MySQL: "MySQL is an open-source relational database management system.",
-      PostgreSQL:
-        "PostgreSQL is a powerful, open-source object-relational database.",
-      SQLite: "SQLite is a lightweight, serverless SQL database engine.",
-      MongoDB:
-        "MongoDB is a document-oriented NoSQL database used for high volume data storage.",
-      Firebase:
-        "Firebase is a platform developed by Google for creating mobile and web applications.",
-      Cassandra:
-        "Cassandra is a distributed NoSQL database designed for handling large amounts of data across many servers.",
-    };
-    setModalContent(explanations[dbName]);
+    setSelectedDatabase(dbName);
     setIsModalOpen(true);
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
-    <div className="bg-gray-100 min-h-screen p-6 pt-28">
+    <div className="bg-gray-100 relative min-h-screen p-6 pt-28">
       <h1 className="mb-2 text-center text-4xl font-bold text-green">
         Manage Your Databases
       </h1>
@@ -67,7 +57,6 @@ export default function GetStarted() {
           </button>
         </div>
 
-        {/* NoSQL Databases */}
         <div className="rounded-lg bg-lightgray p-6 shadow-xl">
           <h2 className="mb-4 text-center text-2xl font-extrabold">
             NoSQL Databases
@@ -98,19 +87,53 @@ export default function GetStarted() {
         </div>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-11/12 max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-2xl font-bold text-green">
-              Database Explanation
-            </h2>
-            <p className="text-gray-700 mb-6">{modalContent}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative flex h-[80%] w-[80%] flex-col rounded-lg bg-white p-6 shadow-lg">
             <button
-              className="w-full rounded-md bg-green py-2 font-semibold text-white hover:bg-opacity-90"
+              className="text-gray-500 absolute top-4 right-4 text-2xl hover:text-black"
+              onClick={closeModal}
+            >
+              &times;
+            </button>
+
+            <h2 className="mb-6 text-center text-3xl font-bold text-green">
+              {selectedDatabase} Explanation
+            </h2>
+
+            <div className="flex flex-1 space-x-6">
+              <div className="w-1/2 rounded-md bg-lightgray p-4 shadow-md">
+                <h3 className="mb-4 text-xl font-semibold text-green">
+                  Database Schema
+                </h3>
+                <p className="text-gray-700">
+                  This section shows the schema for the {selectedDatabase}{" "}
+                  database. For example:
+                  <ul className="mt-2 list-inside list-disc">
+                    <li>Table: Users</li>
+                    <li>Columns: ID, Name, Email</li>
+                    <li>Relations: One-to-Many</li>
+                  </ul>
+                </p>
+              </div>
+
+              <div className="w-1/2 rounded-md bg-lightgray p-4 shadow-md">
+                <h3 className="mb-4 text-xl font-semibold text-green">
+                  Explanation
+                </h3>
+                <p className="text-gray-700">
+                  {selectedDatabase} is widely used in modern applications. It
+                  supports advanced features such as indexing, queries, and
+                  scalability. Learn more about its key features and how to
+                  utilize them in development.
+                </p>
+              </div>
+            </div>
+            <button
+              className="mt-6 w-full rounded-md bg-green py-2 font-semibold text-white hover:bg-opacity-90"
               onClick={() => setIsModalOpen(false)}
             >
-              Close
+              Edit Database
             </button>
           </div>
         </div>

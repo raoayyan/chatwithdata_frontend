@@ -45,7 +45,7 @@ const AIChatInterface = () => {
       <div className="overflow-hidden rounded-lg border border-gray bg-white shadow-lg">
         {/* Chat Header */}
         <div className="flex items-center justify-between bg-green p-4 text-white">
-          <h2 className="text-lg font-bold">AI Chat Interface</h2>
+          <h2 className="text-lg font-bold">Chat Interface</h2>
         </div>
 
         {/* Messages Container */}

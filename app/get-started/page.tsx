@@ -1,9 +1,16 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function GetStarted() {
-  const sqlDatabases = ["MySQL", "PostgreSQL", "SQLite"];
-  const noSqlDatabases = ["MongoDB", "Firebase", "Cassandra"];
+  const databases = [
+    { name: "MySQL", type: "SQL" },
+    { name: "PostgreSQL", type: "SQL" },
+    { name: "SQLite", type: "SQL" },
+    { name: "MongoDB", type: "NoSQL" },
+    { name: "Firebase", type: "NoSQL" },
+    { name: "Cassandra", type: "NoSQL" },
+  ];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDatabase, setSelectedDatabase] = useState("");
@@ -26,65 +33,62 @@ export default function GetStarted() {
         Easily manage your SQL and NoSQL databases from here.
       </p>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* SQL Databases */}
-        <div className="rounded-lg bg-lightgray p-6 shadow-xl">
-          <h2 className="mb-4 text-center text-2xl font-extrabold">
-            SQL Databases
-          </h2>
-          <ul className="mb-4 space-y-4">
-            {sqlDatabases.map((db, index) => (
-              <li key={index} className="rounded-md bg-lightgray p-4 shadow-lg">
-                <div className="flex flex-row justify-between space-x-4">
-                  <h3 className="pt-4 text-lg font-bold">{db}</h3>
-                  <div className="mt-2 flex space-x-4">
-                    <button className="rounded-md border-2 border-green bg-white py-2 px-4 font-semibold text-black hover:bg-green">
-                      Start Chat
-                    </button>
-                    <button
-                      className="rounded-md border-2 border-green bg-white py-2 px-4 font-semibold text-black hover:bg-green"
-                      onClick={() => handleExplanationClick(db)}
+      <div className="from-gray-100 via-gray-200 to-gray-300 rounded-lg bg-gradient-to-br p-6 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+        <ul className="mb-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {databases.map((db, index) => (
+            <li
+              key={index}
+              className="relative overflow-hidden rounded-lg bg-white shadow-[0_4px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)]"
+            >
+              {/* Accent Border */}
+              <div
+                className={`absolute top-0 left-0 h-full w-2 ${
+                  db.type === "SQL" ? "bg-blue-500" : "bg-yellow-500"
+                }`}
+              ></div>
+              <div className="flex h-full flex-col justify-between p-4">
+                {/* Database Info */}
+                <div>
+                  <h3 className="text-gray-800 mb-2 text-xl font-bold">
+                    {db.name}{" "}
+                    <span
+                      className={`ml-2 rounded-full px-3 py-1 text-sm font-semibold ${
+                        db.type === "SQL"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
                     >
-                      Explanation
-                    </button>
-                  </div>
+                      {db.type}
+                    </span>
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Manage and explore the features of {db.name}, a{" "}
+                    {db.type.toLowerCase()} database.
+                  </p>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <button className="mt-10 w-full rounded-md bg-green py-2 font-semibold text-white hover:bg-opacity-90">
-            Add New SQL Database
-          </button>
-        </div>
 
-        <div className="rounded-lg bg-lightgray p-6 shadow-xl">
-          <h2 className="mb-4 text-center text-2xl font-extrabold">
-            NoSQL Databases
-          </h2>
-          <ul className="mb-4 space-y-4">
-            {noSqlDatabases.map((db, index) => (
-              <li key={index} className="rounded-md bg-lightgray p-4 shadow-lg">
-                <div className="flex flex-row justify-between space-x-4">
-                  <h3 className="pt-4 text-lg font-bold">{db}</h3>
-                  <div className="mt-2 flex space-x-4">
-                    <button className="rounded-md border-2 border-green bg-white py-2 px-4 font-semibold text-black hover:bg-green">
-                      Start Chat
-                    </button>
-                    <button
-                      className="rounded-md border-2 border-green bg-white py-2 px-4 font-semibold text-black hover:bg-green"
-                      onClick={() => handleExplanationClick(db)}
-                    >
-                      Explanation
-                    </button>
-                  </div>
+                {/* Action Buttons */}
+                <div className="mt-4 flex space-x-3">
+                  <Link
+                    href="/chat-page"
+                    className="flex-1 rounded-md border-2 border-green py-2 px-4 text-center text-sm font-semibold text-black transition-all hover:bg-green hover:text-white"
+                  >
+                    Start Chat
+                  </Link>
+                  <button
+                    className="flex-1 rounded-md border-2 border-green py-2 px-4 text-sm font-semibold text-black transition-all hover:bg-green hover:text-white"
+                    onClick={() => handleExplanationClick(db.name)}
+                  >
+                    Explanation
+                  </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <button className="mt-10 w-full rounded-md bg-green py-2 font-semibold text-white hover:bg-opacity-90">
-            Add New NoSQL Database
-          </button>
-        </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <button className="mt-10 w-full rounded-md bg-green bg-gradient-to-r py-2 text-lg font-semibold text-white shadow-[0_6px_12px_rgba(0,0,0,0.15)] transition-all hover:from-green">
+          Add New Database
+        </button>
       </div>
 
       {isModalOpen && (

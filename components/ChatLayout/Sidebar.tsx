@@ -28,6 +28,12 @@ export default function Sidebar() {
     router.push(`/chat/${chatId}`); // Navigate to the selected chat
   };
 
+  const handleDeleteChat = (chatId: string) => {
+    const updatedChats = previousChats.filter((id) => id !== chatId);
+    setPreviousChats(updatedChats);
+    localStorage.setItem("chats", JSON.stringify(updatedChats)); // Update localStorage
+  };
+
   return (
     <div className="flex h-screen flex-col bg-[#282a2e] p-2">
       <div className="flex-1">
@@ -59,10 +65,31 @@ export default function Sidebar() {
             {previousChats.map((chatId) => (
               <div
                 key={chatId}
-                onClick={() => handleOpenChat(chatId)}
-                className="bg-gray-800 hover:bg-gray-700 cursor-pointer rounded px-4 py-2 text-white"
+                className="bg-gray-800 hover:bg-gray-700 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
               >
-                Chat ID: {chatId}
+                <span onClick={() => handleOpenChat(chatId)}>
+                  Chat ID: {chatId}
+                </span>
+                <button
+                  onClick={() => handleDeleteChat(chatId)}
+                  className="hover:text-red-500 ml-4"
+                >
+                  <svg
+                    stroke="currentColor"
+                    fill="none"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-2 14H7L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                  </svg>
+                </button>
               </div>
             ))}
           </div>

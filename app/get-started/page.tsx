@@ -73,7 +73,7 @@ export default function GetStarted() {
                   {/* Action Buttons */}
                   <div className="mt-4 flex space-x-3">
                     <Link
-                      href="/chat-page"
+                      href="/chat"
                       className="flex-1 rounded-md border-2 border-green px-4 py-2 text-center text-sm font-semibold text-black transition-all hover:bg-green hover:text-white dark:text-white"
                     >
                       Start Chat

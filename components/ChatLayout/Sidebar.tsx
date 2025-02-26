@@ -65,7 +65,7 @@ export default function Sidebar() {
             {previousChats.map((chatId) => (
               <div
                 key={chatId}
-                className="bg-gray-800 hover:bg-gray-700 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
+                className="hover:bg-gray-700 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded bg-gray550 px-4 py-2 text-white"
               >
                 <span onClick={() => handleOpenChat(chatId)}>
                   Chat ID: {chatId}

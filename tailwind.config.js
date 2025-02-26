@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -17,31 +16,23 @@ module.exports = {
       white: "#FFFFFF",
       black: "#090E34",
       dark: "#1D2144",
-      green: '#19b619',
+      green: "#19b619",
       primary: "#4A6CF7",
       yellow: "#FBB040",
       gray: "#808080",
       lightgray: "rgb(249, 248, 248)",
       "body-color": "#959CB1",
+      // Add new colors
+      gray550: "#555", // Alternating row color 1
+      gray650: "#666", // Alternating row color 2
     },
     screens: {
       xs: "450px",
-      // => @media (min-width: 450px) { ... }
-
       sm: "575px",
-      // => @media (min-width: 576px) { ... }
-
       md: "768px",
-      // => @media (min-width: 768px) { ... }
-
       lg: "992px",
-      // => @media (min-width: 992px) { ... }
-
       xl: "1200px",
-      // => @media (min-width: 1200px) { ... }
-
       "2xl": "1400px",
-      // => @media (min-width: 1400px) { ... }
     },
     extend: {
       boxShadow: {

@@ -1,100 +1,119 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { FiMenu, FiX } from "react-icons/fi";
 
-export default function Sidebar() {
-  const [previousChats, setPreviousChats] = useState<string[]>([]); // Ensure it's an array
+export default function Sidebar({
+  isOpen,
+  setIsOpenAction,
+}: {
+  isOpen: boolean;
+  setIsOpenAction: (state: boolean) => void;
+}) {
+  const [previousChats, setPreviousChats] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    // Load previous chats from localStorage on mount
     const chats = JSON.parse(localStorage.getItem("chats") || "[]");
     if (Array.isArray(chats)) {
       setPreviousChats(chats);
     } else {
-      setPreviousChats([]); // Fallback to empty array if data is invalid
+      setPreviousChats([]);
     }
   }, []);
 
   const handleNewChat = () => {
-    const chatId = Date.now().toString(); // Generate a unique ID
+    const chatId = Date.now().toString();
     const updatedChats = [...previousChats, chatId];
     setPreviousChats(updatedChats);
-    localStorage.setItem("chats", JSON.stringify(updatedChats)); // Save chats to localStorage
+    localStorage.setItem("chats", JSON.stringify(updatedChats));
     router.push(`/chat/${chatId}`);
   };
 
   const handleOpenChat = (chatId: string) => {
-    router.push(`/chat/${chatId}`); // Navigate to the selected chat
+    router.push(`/chat/${chatId}`);
   };
 
   const handleDeleteChat = (chatId: string) => {
     const updatedChats = previousChats.filter((id) => id !== chatId);
     setPreviousChats(updatedChats);
-    localStorage.setItem("chats", JSON.stringify(updatedChats)); // Update localStorage
+    localStorage.setItem("chats", JSON.stringify(updatedChats));
   };
 
   return (
-    <div className="flex h-screen flex-col bg-[#282a2e] p-2">
-      <div className="flex-1">
-        <div>
-          {/* New Chat Button */}
-          <button
-            onClick={handleNewChat}
-            className="m-4 mx-4 flex w-[90%] items-center justify-start space-x-2 rounded-md bg-green px-10 py-2 text-white hover:opacity-70"
-          >
-            <svg
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>New Chat</span>
-          </button>
+    <>
+      <button
+        onClick={() => setIsOpenAction(!isOpen)}
+        className="fixed left-4 top-4 z-50 rounded-full border-2 border-gray bg-[#282a2e] p-2 text-white shadow-lg transition-all duration-300"
+      >
+        {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+      </button>
 
-          {/* Previous Chats */}
-          <div className="text-gray-400 m-4 mx-8 text-xs">Previous chats</div>
-          <div>
-            {previousChats.map((chatId) => (
-              <div
-                key={chatId}
-                className="hover:bg-gray-700 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded bg-gray550 px-4 py-2 text-white"
+      <motion.div
+        animate={{ width: isOpen ? "20%" : "0px" }}
+        className="fixed left-0 top-0 h-screen overflow-hidden bg-[#282a2e] text-white"
+      >
+        {isOpen && (
+          <div className="flex h-full flex-col pt-16">
+            {/* New Chat Button */}
+            <button
+              onClick={handleNewChat}
+              className="m-4 flex w-[90%] items-center justify-start space-x-2 rounded-md bg-green px-4 py-2 text-white"
+            >
+              <svg
+                stroke="currentColor"
+                fill="none"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <span onClick={() => handleOpenChat(chatId)}>
-                  Chat ID: {chatId}
-                </span>
-                <button
-                  onClick={() => handleDeleteChat(chatId)}
-                  className="hover:text-red-500 ml-4"
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Chat</span>
+            </button>
+
+            {/* Previous Chats */}
+            <div className="text-gray-400 m-4 text-xs">Previous chats</div>
+            <div>
+              {previousChats.map((chatId) => (
+                <div
+                  key={chatId}
+                  className="hover:bg-gray-700 m-2 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
                 >
-                  <svg
-                    stroke="currentColor"
-                    fill="none"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span onClick={() => handleOpenChat(chatId)}>
+                    Chat ID: {chatId}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteChat(chatId)}
+                    className="ml-4 hover:text-red-500"
                   >
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6l-2 14H7L5 6"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                </button>
-              </div>
-            ))}
+                    <svg
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6l-2 14H7L5 6"></path>
+                      <path d="M10 11v6"></path>
+                      <path d="M14 11v6"></path>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </motion.div>
+    </>
   );
 }

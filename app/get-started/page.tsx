@@ -4,19 +4,21 @@ import Link from "next/link";
 import Header from "@/components/Header";
 
 export default function GetStarted() {
-  const databases = [
+  const [databases, setDatabases] = useState([
     { name: "MySQL", type: "SQL" },
     { name: "PostgreSQL", type: "SQL" },
     { name: "SQLite", type: "SQL" },
     { name: "MongoDB", type: "NoSQL" },
     { name: "Firebase", type: "NoSQL" },
     { name: "Cassandra", type: "NoSQL" },
-  ];
+  ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDatabase, setSelectedDatabase] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newDatabase, setNewDatabase] = useState({ name: "", type: "" });
 
-  const handleExplanationClick = (dbName) => {
+  const handleExplanationClick = (dbName: string) => {
     setSelectedDatabase(dbName);
     setIsModalOpen(true);
   };
@@ -25,98 +27,135 @@ export default function GetStarted() {
     setIsModalOpen(false);
   };
 
+  const handleAddDatabase = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleSaveNewDatabase = () => {
+    if (newDatabase.name && newDatabase.type) {
+      setDatabases([...databases, newDatabase]);
+      setNewDatabase({ name: "", type: "" });
+      setIsAddModalOpen(false);
+    }
+  };
+
   return (
     <>
       <Header />
-      <div className="bg-gray-100 relative mb-16 min-h-screen p-6 pt-28">
-        <h1 className="mb-2 text-center text-4xl font-bold text-green">
-          Manage Your Databases
-        </h1>
-        <p className="text-md mb-8 text-center text-gray">
-          Easily manage your SQL and NoSQL databases from here.
-        </p>
+      <div className="min-h-screen bg-gray100 p-4 pt-24 dark:bg-dark">
+        {/* Hero Section */}
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-green dark:text-green">
+            Manage Your Databases
+          </h1>
+          <p className="text-sm text-gray800 dark:text-body-color">
+            Effortlessly manage and interact with your SQL and NoSQL databases.
+          </p>
+        </div>
 
-        <div className="from-gray-100 via-gray-200 to-gray-300 rounded-lg bg-gradient-to-br p-6 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
-          <ul className="mb-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Database Grid */}
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {databases.map((db, index) => (
-              <li
+              <div
                 key={index}
-                className="relative overflow-hidden rounded-lg bg-white shadow-[0_4px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_6px_15px_rgba(0,0,0,0.2)] dark:!bg-green dark:!bg-opacity-10"
+                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-lg dark:bg-dark"
               >
-                {/* Accent Border */}
+                {/* Accent Bar */}
                 <div
-                  className={`absolute left-0 top-0 h-full w-2 ${
-                    db.type === "SQL" ? "bg-blue-500" : "bg-yellow-500"
+                  className={`h-1.5 ${
+                    db.type === "SQL" ? "bg-primary" : "bg-yellow"
                   }`}
                 ></div>
-                <div className="flex h-full flex-col justify-between p-4">
-                  {/* Database Info */}
-                  <div>
-                    <h3 className="text-gray-800 mb-2 text-xl font-bold">
-                      {db.name}{" "}
-                      <span
-                        className={`ml-2 rounded-full px-3 py-1 text-sm font-semibold ${
-                          db.type === "SQL"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {db.type}
-                      </span>
+
+                {/* Card Content */}
+                <div className="p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-black dark:text-white">
+                      {db.name}
                     </h3>
-                    <p className="text-gray-600 text-sm">
-                      Manage and explore the features of {db.name}, a{" "}
-                      {db.type.toLowerCase()} database.
-                    </p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        db.type === "SQL"
+                          ? "bg-blue-100 text-primary"
+                          : "bg-yellow-100 text-yellow"
+                      }`}
+                    >
+                      {db.type}
+                    </span>
                   </div>
+                  <p className="mb-4 text-sm text-gray800 dark:text-body-color">
+                    Manage and explore the features of {db.name}, a{" "}
+                    {db.type.toLowerCase()} database.
+                  </p>
 
                   {/* Action Buttons */}
-                  <div className="mt-4 flex space-x-3">
+                  <div className="flex gap-2">
                     <Link
                       href="/chat"
-                      className="flex-1 rounded-md border-2 border-green px-4 py-2 text-center text-sm font-semibold text-black transition-all hover:bg-green hover:text-white dark:text-white"
+                      className="flex-1 rounded-md bg-green px-3 py-1.5 text-center text-sm text-white transition-all hover:bg-opacity-90"
                     >
                       Start Chat
                     </Link>
                     <button
-                      className="flex-1 rounded-md border-2 border-green px-4 py-2 text-sm font-semibold text-black transition-all hover:bg-green hover:text-white dark:text-white"
+                      className="flex-1 rounded-md border border-green bg-transparent px-3 py-1.5 text-center text-sm text-green transition-all hover:bg-green hover:text-white"
                       onClick={() => handleExplanationClick(db.name)}
                     >
                       Explanation
                     </button>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
-          <button className="mt-10 w-full rounded-md bg-green bg-gradient-to-r py-2 text-lg font-semibold text-white shadow-[0_6px_12px_rgba(0,0,0,0.15)] transition-all hover:from-green">
+          </div>
+
+          {/* Add New Database Button */}
+          <button
+            className="mx-auto mt-8 flex w-full max-w-sm items-center justify-center gap-2 rounded-md bg-green px-4 py-2 text-sm text-white transition-all hover:bg-opacity-90"
+            onClick={handleAddDatabase}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
             Add New Database
           </button>
         </div>
 
+        {/* Explanation Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="relative flex h-[80%] w-[80%] flex-col rounded-lg bg-white p-6 shadow-lg">
+            <div className="w-11/12 max-w-2xl rounded-lg bg-white p-6 dark:bg-dark">
               <button
-                className="text-gray-500 absolute right-4 top-4 text-2xl hover:text-black"
+                className="absolute right-2 top-2 text-xl text-gray800 hover:text-black dark:text-body-color dark:hover:text-white"
                 onClick={closeModal}
               >
                 &times;
               </button>
 
-              <h2 className="mb-6 text-center text-3xl font-bold text-green">
+              <h2 className="mb-4 text-2xl font-bold text-green dark:text-green">
                 {selectedDatabase} Explanation
               </h2>
 
-              <div className="flex flex-1 space-x-6">
-                <div className="w-1/2 rounded-md bg-lightgray p-4 shadow-md">
-                  <h3 className="mb-4 text-xl font-semibold text-green">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-lg bg-lightgray p-4 dark:bg-gray800">
+                  <h3 className="mb-2 text-lg font-semibold text-green dark:text-green">
                     Database Schema
                   </h3>
-                  <p className="text-gray-700">
+                  <p className="text-sm text-gray800 dark:text-body-color">
                     This section shows the schema for the {selectedDatabase}{" "}
                     database. For example:
-                    <ul className="mt-2 list-inside list-disc">
+                    <ul className="mt-1 list-inside list-disc">
                       <li>Table: Users</li>
                       <li>Columns: ID, Name, Email</li>
                       <li>Relations: One-to-Many</li>
@@ -124,11 +163,11 @@ export default function GetStarted() {
                   </p>
                 </div>
 
-                <div className="w-1/2 rounded-md bg-lightgray p-4 shadow-md">
-                  <h3 className="mb-4 text-xl font-semibold text-green">
+                <div className="rounded-lg bg-lightgray p-4 dark:bg-gray800">
+                  <h3 className="mb-2 text-lg font-semibold text-green dark:text-green">
                     Explanation
                   </h3>
-                  <p className="text-gray-700">
+                  <p className="text-sm text-gray800 dark:text-body-color">
                     {selectedDatabase} is widely used in modern applications. It
                     supports advanced features such as indexing, queries, and
                     scalability. Learn more about its key features and how to
@@ -136,11 +175,60 @@ export default function GetStarted() {
                   </p>
                 </div>
               </div>
+
               <button
-                className="mt-6 w-full rounded-md bg-green py-2 font-semibold text-white hover:bg-opacity-90"
-                onClick={() => setIsModalOpen(false)}
+                className="mt-4 w-full rounded-md bg-green px-4 py-2 text-sm text-white transition-all hover:bg-opacity-90"
+                onClick={closeModal}
               >
-                Edit Database
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Add Database Modal */}
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-11/12 max-w-sm rounded-lg bg-white p-6 dark:bg-dark">
+              <button
+                className="absolute right-2 top-2 text-xl text-gray800 hover:text-black dark:text-body-color dark:hover:text-white"
+                onClick={() => setIsAddModalOpen(false)}
+              >
+                &times;
+              </button>
+
+              <h2 className="mb-4 text-2xl font-bold text-green dark:text-green">
+                Add New Database
+              </h2>
+
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Database Name"
+                  className="w-full rounded-md border border-gray200 bg-transparent px-3 py-2 text-sm text-black dark:border-gray800 dark:text-white"
+                  value={newDatabase.name}
+                  onChange={(e) =>
+                    setNewDatabase({ ...newDatabase, name: e.target.value })
+                  }
+                />
+                <select
+                  className="w-full rounded-md border border-gray200 bg-transparent px-3 py-2 text-sm text-black dark:border-gray800 dark:text-white"
+                  value={newDatabase.type}
+                  onChange={(e) =>
+                    setNewDatabase({ ...newDatabase, type: e.target.value })
+                  }
+                >
+                  <option value="">Select Type</option>
+                  <option value="SQL">SQL</option>
+                  <option value="NoSQL">NoSQL</option>
+                </select>
+              </div>
+
+              <button
+                className="mt-4 w-full rounded-md bg-green px-4 py-2 text-sm text-white transition-all hover:bg-opacity-90"
+                onClick={handleSaveNewDatabase}
+              >
+                Save Database
               </button>
             </div>
           </div>

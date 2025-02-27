@@ -22,9 +22,9 @@ module.exports = {
       gray: "#808080",
       lightgray: "rgb(249, 248, 248)",
       "body-color": "#959CB1",
-      // Add new colors
-      gray550: "#555", // Alternating row color 1
-      gray650: "#666", // Alternating row color 2
+      gray100: "#F3F4F6",
+      gray200: "#E5E7EB",
+      gray800: "#1F2937",
     },
     screens: {
       xs: "450px",

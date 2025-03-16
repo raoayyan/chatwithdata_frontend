@@ -27,7 +27,7 @@ const Video = () => {
             >
               <div className="relative aspect-[77/40] items-center justify-center">
                 <Image src="/images/video/video.jpg" alt="video image" fill />
-                <div className="absolute top-0 right-0 flex h-full w-full items-center justify-center">
+                <div className="absolute right-0 top-0 flex h-full w-full items-center justify-center">
                   <button
                     onClick={() => setOpen(true)}
                     className="flex h-[70px] w-[70px] items-center justify-center rounded-full bg-white bg-opacity-75 text-primary transition hover:bg-opacity-100"
@@ -56,10 +56,6 @@ const Video = () => {
         videoId="L61p2uyiMSo"
         onClose={() => setOpen(false)}
       />
-
-      <div className="absolute bottom-0 left-0 right-0 z-[-1]">
-        <img src="/images/video/shape.svg" alt="shape" className="w-full" />
-      </div>
     </section>
   );
 };

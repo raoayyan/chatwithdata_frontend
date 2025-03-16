@@ -5,8 +5,8 @@ export default function NewChat() {
   const router = useRouter();
 
   const handleNewChat = async () => {
-    const chatId = Date.now().toString(); // Generate a unique ID for the chat
-    router.push(`/chat/${chatId}`); // Navigate to the new chat URL
+    const chatId = Date.now().toString();
+    router.push(`/chat/${chatId}`);
   };
 
   return (

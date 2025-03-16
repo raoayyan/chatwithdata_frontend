@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 
@@ -12,13 +12,85 @@ export default function GetStarted() {
     { name: "Firebase", type: "NoSQL" },
     { name: "Cassandra", type: "NoSQL" },
   ]);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDatabase, setSelectedDatabase] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newDatabase, setNewDatabase] = useState({ name: "", type: "" });
+  const [newDatabase, setNewDatabase] = useState({
+    name: "",
+    databaseURI: "",
+    type: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleExplanationClick = (dbName: string) => {
+  useEffect(() => {
+    const fetchDatabases = async () => {
+      try {
+        const response = await fetch("https://127.000.001/fetch-databases");
+        if (!response.ok) {
+          throw new Error("Failed to fetch databases");
+        }
+        const data = await response.json();
+        setDatabases(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDatabases();
+  }, []);
+
+  const saveDatabaseToBackend = async (database) => {
+    try {
+      let apiUrl;
+      if (database.type === "SQL") {
+        apiUrl = "https://127.000.001/api/save-sql-database";
+      } else if (database.type === "NoSQL") {
+        apiUrl = "https://127.000.001/api/save-nosql-database";
+      } else {
+        throw new Error("Invalid database type");
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(database),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save database");
+      }
+
+      const data = await response.json();
+      return data; // Return the response data if needed
+    } catch (error) {
+      console.error("Error saving database:", error);
+      throw error;
+    }
+  };
+
+  const handleSaveNewDatabase = async () => {
+    if (newDatabase.name && newDatabase.databaseURI && newDatabase.type) {
+      try {
+        await saveDatabaseToBackend(newDatabase);
+        setDatabases([...databases, newDatabase]);
+
+        setNewDatabase({ name: "", databaseURI: "", type: "" });
+        setIsAddModalOpen(false);
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to save the database. Please try again.");
+      }
+    } else {
+      alert("Please fill out all fields.");
+    }
+  };
+
+  const handleExplanationClick = (dbName) => {
     setSelectedDatabase(dbName);
     setIsModalOpen(true);
   };
@@ -31,13 +103,33 @@ export default function GetStarted() {
     setIsAddModalOpen(true);
   };
 
-  const handleSaveNewDatabase = () => {
-    if (newDatabase.name && newDatabase.type) {
-      setDatabases([...databases, newDatabase]);
-      setNewDatabase({ name: "", type: "" });
-      setIsAddModalOpen(false);
-    }
-  };
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray100 p-4 pt-24 dark:bg-dark">
+        <Header />
+        <div className="text-center">
+          <p className="text-lg text-green dark:text-green">
+            Loading databases...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render error state
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen bg-gray100 p-4 pt-24 dark:bg-dark">
+  //       <Header />
+  //       <div className="text-center">
+  //         <p className="text-red-500 dark:text-red-400 text-lg">
+  //           Error: {error}
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -59,7 +151,7 @@ export default function GetStarted() {
             {databases.map((db, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-lg dark:bg-dark"
+                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-lg dark:border dark:border-gray800 dark:bg-dark dark:shadow-2xl"
               >
                 {/* Accent Bar */}
                 <div
@@ -92,7 +184,10 @@ export default function GetStarted() {
                   {/* Action Buttons */}
                   <div className="flex gap-2">
                     <Link
-                      href="/chat"
+                      href={{
+                        pathname: "/chat",
+                        query: { database: db.name },
+                      }}
                       className="flex-1 rounded-md bg-green px-3 py-1.5 text-center text-sm text-white transition-all hover:bg-opacity-90"
                     >
                       Start Chat
@@ -189,9 +284,9 @@ export default function GetStarted() {
         {/* Add Database Modal */}
         {isAddModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-11/12 max-w-sm rounded-lg bg-white p-6 dark:bg-dark">
+            <div className="relative min-h-[45%] w-11/12 max-w-md rounded-lg bg-white p-6 dark:bg-dark">
               <button
-                className="absolute right-2 top-2 text-xl text-gray800 hover:text-black dark:text-body-color dark:hover:text-white"
+                className="absolute right-4 top-2 text-xl text-gray800 hover:text-black dark:text-body-color dark:hover:text-white"
                 onClick={() => setIsAddModalOpen(false)}
               >
                 &times;
@@ -209,6 +304,18 @@ export default function GetStarted() {
                   value={newDatabase.name}
                   onChange={(e) =>
                     setNewDatabase({ ...newDatabase, name: e.target.value })
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="Database URI"
+                  className="w-full rounded-md border border-gray200 bg-transparent px-3 py-2 text-sm text-black dark:border-gray800 dark:text-white"
+                  value={newDatabase.databaseURI}
+                  onChange={(e) =>
+                    setNewDatabase({
+                      ...newDatabase,
+                      databaseURI: e.target.value,
+                    })
                   }
                 />
                 <select

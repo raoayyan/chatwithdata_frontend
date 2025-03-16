@@ -19,42 +19,51 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState<string>("");
   const [canvasData, setCanvasData] = useState(null);
   const [isCanvasOpen, setIsCanvasOpen] = useState(false);
+  const databaseName = localStorage.getItem("databaseName");
 
-  // Generate mock employee data
-  const generateEmployees = (count: number) => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: i + 1,
-      name: faker.person.fullName(),
-      position: faker.person.jobTitle(),
-      department: faker.commerce.department(),
-    }));
+  // Function to send query to the backend
+  const sendQueryToBackend = async (query, databaseName) => {
+    try {
+      const response = await fetch("https://127.000.001/api/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query, database: databaseName }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send query");
+      }
+
+      const data = await response.json();
+      return data; // Return the response data
+    } catch (error) {
+      console.error("Error sending query:", error);
+      throw error;
+    }
   };
 
-  // Handle user input
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    // Add user message to chat
     const newMessage = { type: "user", text: inputValue };
     setMessages((prev) => [...prev, newMessage]);
 
-    // Check if the input matches the "generate employees" pattern
-    if (inputValue.match(/generate (\d+) rows of employee/i)) {
-      const count = parseInt(inputValue.match(/\d+/)[0], 10);
-      const employees = generateEmployees(count);
+    try {
+      const response = await sendQueryToBackend(inputValue, databaseName);
 
-      // Add bot message with mock data
       const botMessage = {
         type: "bot",
-        text: `Generated ${count} employees.`,
-        data: employees,
+        text: response.message, // Assuming the backend returns a "message" field
+        data: response.data, // Optional: Include any additional data from the backend
       };
       setMessages((prev) => [...prev, botMessage]);
-    } else {
-      // Add default bot message
+    } catch (error) {
+      // Add error message if the query fails
       const botMessage = {
         type: "bot",
-        text: "Sorry, I didn't understand. Try 'Generate 5 rows of employee'.",
+        text: "Sorry, something went wrong. Please try again.",
       };
       setMessages((prev) => [...prev, botMessage]);
     }
@@ -70,8 +79,10 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-lightgray">
-      <h1 className="mt-4 text-center text-2xl font-bold">Chat ID: {chatId}</h1>
+    <div className="flex h-screen flex-col bg-white">
+      <h1 className="mt-4 text-center text-2xl font-bold">
+        Database Name : {databaseName}
+      </h1>
       {messages.length === 0 && (
         <div className="flex flex-grow flex-col items-center justify-center">
           <h1 className="mb-6 text-5xl font-bold">Chat With Data</h1>
@@ -82,7 +93,7 @@ export default function ChatPage() {
       )}
 
       {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto bg-lightgray p-4">
+      <div className="flex-grow overflow-y-auto bg-white p-4">
         {messages.map((msg, index) => (
           <div
             key={index}
@@ -91,11 +102,11 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`ml-5 mr-5 max-w-[70%] rounded-lg p-3 ${
+              className={`ml-5 mr-5 p-3 ${
                 msg.type === "user"
-                  ? "bg-primary text-white"
-                  : "bg-gray-200 text-black"
-              } shadow-md`}
+                  ? "max-w-[50%] rounded-2xl bg-lightgray text-black shadow-md"
+                  : "max-w-[90%] bg-white text-black"
+              } `}
             >
               <p>{msg.text}</p>
 

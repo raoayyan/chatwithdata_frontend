@@ -4,12 +4,12 @@ import { useParams } from "next/navigation";
 import { faker } from "@faker-js/faker";
 import dynamic from "next/dynamic";
 
-const CanvasComponent = dynamic(
-  () => import("@/components/ChatLayout/CanvasComponent"),
-  {
-    ssr: false,
-  }
-);
+// const CanvasComponent = dynamic(
+//   () => import("@/components/ChatLayout/CanvasComponent"),
+//   {
+//     ssr: false,
+//   }
+// );
 
 export default function ChatPage() {
   const { chatId } = useParams();
@@ -24,12 +24,12 @@ export default function ChatPage() {
   // Function to send query to the backend
   const sendQueryToBackend = async (query, databaseName) => {
     try {
-      const response = await fetch("https://127.000.001/api/query", {
+      const response = await fetch("http://127.0.0.1:8000/api/chat_with_database/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query, database: databaseName }),
+        body: JSON.stringify({ user_query: query, database_name: databaseName }),
       });
 
       if (!response.ok) {
@@ -55,10 +55,11 @@ export default function ChatPage() {
 
       const botMessage = {
         type: "bot",
-        text: response.message, // Assuming the backend returns a "message" field
-        data: response.data, // Optional: Include any additional data from the backend
+        text: response.response, // Assuming the backend returns a "message" field
       };
       setMessages((prev) => [...prev, botMessage]);
+      console.log("Response from backend:", response.response);
+      
     } catch (error) {
       // Add error message if the query fails
       const botMessage = {
@@ -71,7 +72,7 @@ export default function ChatPage() {
     // Clear the input field
     setInputValue("");
   };
-
+  
   // Handle opening the canvas with data
   const handleShowCanvas = (data: any) => {
     setCanvasData(data);
@@ -162,11 +163,11 @@ export default function ChatPage() {
       </div>
 
       {/* Canvas Sidebar */}
-      <CanvasComponent
+      {/* <CanvasComponent
         data={canvasData}
         isOpen={isCanvasOpen}
         onClose={() => setIsCanvasOpen(false)}
-      />
+      /> */}
     </div>
   );
 }

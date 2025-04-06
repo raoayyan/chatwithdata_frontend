@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { c } from "framer-motion/dist/types.d-6pKw1mTI";
 
 export default function GetStarted() {
   const [databases, setDatabases] = useState([
@@ -16,8 +17,8 @@ export default function GetStarted() {
   const [selectedDatabase, setSelectedDatabase] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newDatabase, setNewDatabase] = useState({
-    name: "",
-    databaseURI: "",
+    db_name: "",
+    db_uri: "",
     type: "",
   });
   const [loading, setLoading] = useState(true);
@@ -26,12 +27,18 @@ export default function GetStarted() {
   useEffect(() => {
     const fetchDatabases = async () => {
       try {
-        const response = await fetch("https://127.000.001/fetch-databases");
+        const response = await fetch("http://127.0.0.1:8000/api/databases/");
         if (!response.ok) {
           throw new Error("Failed to fetch databases");
         }
         const data = await response.json();
-        setDatabases(data);
+        const databases = data.databases.map((db) => ({
+          name: db.db_name,
+          type: "NOSQL", // or dynamically assign if available
+        }));
+        setDatabases(databases);
+        // setDatabases(data);
+        console.log("Fetched databases:", data);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -48,7 +55,7 @@ export default function GetStarted() {
       if (database.type === "SQL") {
         apiUrl = "https://127.000.001/api/save-sql-database";
       } else if (database.type === "NoSQL") {
-        apiUrl = "https://127.000.001/api/save-nosql-database";
+        apiUrl = "http://127.0.0.1:8000/api/add-database/";
       } else {
         throw new Error("Invalid database type");
       }
@@ -74,12 +81,12 @@ export default function GetStarted() {
   };
 
   const handleSaveNewDatabase = async () => {
-    if (newDatabase.name && newDatabase.databaseURI && newDatabase.type) {
+    if (newDatabase.db_name && newDatabase.db_uri && newDatabase.type) {
       try {
         await saveDatabaseToBackend(newDatabase);
-        setDatabases([...databases, newDatabase]);
+        setDatabases([...databases, { name: newDatabase.db_name, type: newDatabase.type }]);
 
-        setNewDatabase({ name: "", databaseURI: "", type: "" });
+        setNewDatabase({ db_name: "", db_uri: "", type: "" });
         setIsAddModalOpen(false);
       } catch (error) {
         console.error("Error:", error);
@@ -301,20 +308,20 @@ export default function GetStarted() {
                   type="text"
                   placeholder="Database Name"
                   className="w-full rounded-md border border-gray200 bg-transparent px-3 py-2 text-sm text-black dark:border-gray800 dark:text-white"
-                  value={newDatabase.name}
+                  value={newDatabase.db_name}
                   onChange={(e) =>
-                    setNewDatabase({ ...newDatabase, name: e.target.value })
+                    setNewDatabase({ ...newDatabase, db_name: e.target.value })
                   }
                 />
                 <input
                   type="text"
                   placeholder="Database URI"
                   className="w-full rounded-md border border-gray200 bg-transparent px-3 py-2 text-sm text-black dark:border-gray800 dark:text-white"
-                  value={newDatabase.databaseURI}
+                  value={newDatabase.db_uri}
                   onChange={(e) =>
                     setNewDatabase({
                       ...newDatabase,
-                      databaseURI: e.target.value,
+                      db_uri: e.target.value,
                     })
                   }
                 />

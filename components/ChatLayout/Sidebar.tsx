@@ -11,32 +11,50 @@ export default function Sidebar({
   isOpen: boolean;
   setIsOpenAction: (state: boolean) => void;
 }) {
-  const [previousChats, setPreviousChats] = useState<string[]>([]);
+  const [previousChats, setPreviousChats] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const router = useRouter();
 
+  // Load chats from localStorage on mount
   useEffect(() => {
-    const chats = JSON.parse(localStorage.getItem("chats") || "[]");
-    if (Array.isArray(chats)) {
-      setPreviousChats(chats);
+    const stored = JSON.parse(localStorage.getItem("chats") || "[]");
+
+    if (Array.isArray(stored)) {
+      // If old format (array of strings), convert it
+      if (typeof stored[0] === "string") {
+        const migrated = stored.map((id: string) => ({
+          id,
+          name: `Chat on ${new Date(parseInt(id)).toLocaleString()}`,
+        }));
+        setPreviousChats(migrated);
+        localStorage.setItem("chats", JSON.stringify(migrated));
+      } else {
+        setPreviousChats(stored);
+      }
     } else {
       setPreviousChats([]);
     }
   }, []);
 
+  // Create a new chat with a readable name
   const handleNewChat = () => {
     const chatId = Date.now().toString();
-    const updatedChats = [...previousChats, chatId];
+    const chatName = `${new Date().toJSON().slice(0, 10)}`;
+    const updatedChats = [...previousChats, { id: chatId, name: chatName }];
     setPreviousChats(updatedChats);
     localStorage.setItem("chats", JSON.stringify(updatedChats));
     router.push(`/chat/${chatId}`);
   };
 
+  // Navigate to selected chat
   const handleOpenChat = (chatId: string) => {
     router.push(`/chat/${chatId}`);
   };
 
+  // Delete selected chat
   const handleDeleteChat = (chatId: string) => {
-    const updatedChats = previousChats.filter((id) => id !== chatId);
+    const updatedChats = previousChats.filter((chat) => chat.id !== chatId);
     setPreviousChats(updatedChats);
     localStorage.setItem("chats", JSON.stringify(updatedChats));
   };
@@ -80,17 +98,17 @@ export default function Sidebar({
             {/* Previous Chats */}
             <div className="text-gray-400 m-4 text-xs">Previous chats</div>
             <div>
-              {previousChats.map((chatId) => (
+              {previousChats.map((chat) => (
                 <div
-                  key={chatId}
+                  key={chat.id}
                   className="hover:bg-gray-700 m-2 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
                 >
-                  <span onClick={() => handleOpenChat(chatId)}>
-                    Chat ID: {chatId}
+                  <span onClick={() => handleOpenChat(chat.id)}>
+                    {chat.name}
                   </span>
                   <button
-                    onClick={() => handleDeleteChat(chatId)}
-                    className="ml-4 hover:text-red-500"
+                    onClick={() => handleDeleteChat(chat.id)}
+                    className="hover:text-red-500 ml-4"
                   >
                     <svg
                       stroke="currentColor"

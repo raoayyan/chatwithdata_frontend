@@ -25,6 +25,7 @@ module.exports = {
       gray100: "#F3F4F6",
       gray200: "#E5E7EB",
       gray800: "#1F2937",
+      red: "#FF0000",
     },
     screens: {
       xs: "450px",

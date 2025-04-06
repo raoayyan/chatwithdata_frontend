@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { faker } from "@faker-js/faker";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
 
 // const CanvasComponent = dynamic(
 //   () => import("@/components/ChatLayout/CanvasComponent"),
@@ -24,13 +25,19 @@ export default function ChatPage() {
   // Function to send query to the backend
   const sendQueryToBackend = async (query, databaseName) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/chat_with_database/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_query: query, database_name: databaseName }),
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/chat_with_database/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_query: query,
+            database_name: databaseName,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send query");
@@ -55,11 +62,10 @@ export default function ChatPage() {
 
       const botMessage = {
         type: "bot",
-        text: response.response, // Assuming the backend returns a "message" field
+        text: response.response,
       };
       setMessages((prev) => [...prev, botMessage]);
       console.log("Response from backend:", response.response);
-      
     } catch (error) {
       // Add error message if the query fails
       const botMessage = {
@@ -72,7 +78,7 @@ export default function ChatPage() {
     // Clear the input field
     setInputValue("");
   };
-  
+
   // Handle opening the canvas with data
   const handleShowCanvas = (data: any) => {
     setCanvasData(data);
@@ -109,7 +115,7 @@ export default function ChatPage() {
                   : "max-w-[90%] bg-white text-black"
               } `}
             >
-              <p>{msg.text}</p>
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
 
               {/* Show in Canvas Button */}
               {msg.type === "bot" && msg.data && (

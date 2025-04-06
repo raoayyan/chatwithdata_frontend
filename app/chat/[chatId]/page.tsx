@@ -1,16 +1,8 @@
 "use client";
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import { faker } from "@faker-js/faker";
-import dynamic from "next/dynamic";
-import ReactMarkdown from "react-markdown";
 
-// const CanvasComponent = dynamic(
-//   () => import("@/components/ChatLayout/CanvasComponent"),
-//   {
-//     ssr: false,
-//   }
-// );
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 export default function ChatPage() {
   const { chatId } = useParams();
@@ -20,34 +12,52 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState<string>("");
   const [canvasData, setCanvasData] = useState(null);
   const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-  const databaseName = localStorage.getItem("databaseName");
+  const [firstMessageSent, setFirstMessageSent] = useState(false);
+  const databaseName =
+    typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
-  // Function to send query to the backend
-  const sendQueryToBackend = async (query, databaseName) => {
+  // Function to send query to the backend for processing
+  const sendQueryToBackend = async (query: string, dbName: string) => {
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/chat_with_database/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_query: query, database_name: dbName }),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to send query");
+
+    const data = await response.json();
+    return data;
+  };
+
+  // Function to store chats in a separate chat-storage API
+  const storeChat = async (query: string, response: string) => {
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/chat_with_database/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_query: query,
-            database_name: databaseName,
-          }),
-        }
-      );
+      const payload: any = {
+        user_query: query,
+        bot_response: response,
+      };
 
-      if (!response.ok) {
-        throw new Error("Failed to send query");
+      // Send chatId only for the first message
+      if (!firstMessageSent && chatId) {
+        payload.chat_id = chatId;
+        setFirstMessageSent(true);
       }
 
-      const data = await response.json();
-      return data; // Return the response data
-    } catch (error) {
-      console.error("Error sending query:", error);
-      throw error;
+      await fetch("http://127.0.0.1:8000/api/store_chat/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Failed to store chat:", err);
     }
   };
 
@@ -58,28 +68,27 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, newMessage]);
 
     try {
-      const response = await sendQueryToBackend(inputValue, databaseName);
+      const response = await sendQueryToBackend(inputValue, databaseName || "");
 
       const botMessage = {
         type: "bot",
         text: response.response,
       };
       setMessages((prev) => [...prev, botMessage]);
-      console.log("Response from backend:", response.response);
+
+      // Store chat message
+      await storeChat(inputValue, response.response);
     } catch (error) {
-      // Add error message if the query fails
-      const botMessage = {
+      const errorMessage = {
         type: "bot",
         text: "Sorry, something went wrong. Please try again.",
       };
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     }
 
-    // Clear the input field
     setInputValue("");
   };
 
-  // Handle opening the canvas with data
   const handleShowCanvas = (data: any) => {
     setCanvasData(data);
     setIsCanvasOpen(true);
@@ -90,6 +99,7 @@ export default function ChatPage() {
       <h1 className="mt-4 text-center text-2xl font-bold">
         Database Name : {databaseName}
       </h1>
+
       {messages.length === 0 && (
         <div className="flex flex-grow flex-col items-center justify-center">
           <h1 className="mb-6 text-5xl font-bold">Chat With Data</h1>
@@ -109,15 +119,14 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`ml-5 mr-5 p-3 ${
+              className={`ml-20 mr-32 p-3 ${
                 msg.type === "user"
                   ? "max-w-[50%] rounded-2xl bg-lightgray text-black shadow-md"
-                  : "max-w-[90%] bg-white text-black"
-              } `}
+                  : "max-w-[60%] rounded-3xl bg-lightgray text-black shadow-md"
+              }`}
             >
               <ReactMarkdown>{msg.text}</ReactMarkdown>
 
-              {/* Show in Canvas Button */}
               {msg.type === "bot" && msg.data && (
                 <button
                   onClick={() => handleShowCanvas(msg.data)}
@@ -141,10 +150,8 @@ export default function ChatPage() {
             name="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                handleSendMessage();
-              }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSendMessage();
             }}
           />
           <button
@@ -167,13 +174,6 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
-
-      {/* Canvas Sidebar */}
-      {/* <CanvasComponent
-        data={canvasData}
-        isOpen={isCanvasOpen}
-        onClose={() => setIsCanvasOpen(false)}
-      /> */}
     </div>
   );
 }

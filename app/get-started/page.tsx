@@ -23,6 +23,8 @@ export default function GetStarted() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [schemas, setSchemas] = useState([]);
+  const [dbExplanationError, setDbExplanationError] = useState(null);
 
   useEffect(() => {
     const fetchDatabases = async () => {
@@ -84,7 +86,10 @@ export default function GetStarted() {
     if (newDatabase.db_name && newDatabase.db_uri && newDatabase.type) {
       try {
         await saveDatabaseToBackend(newDatabase);
-        setDatabases([...databases, { name: newDatabase.db_name, type: newDatabase.type }]);
+        setDatabases([
+          ...databases,
+          { name: newDatabase.db_name, type: newDatabase.type },
+        ]);
 
         setNewDatabase({ db_name: "", db_uri: "", type: "" });
         setIsAddModalOpen(false);
@@ -97,9 +102,25 @@ export default function GetStarted() {
     }
   };
 
-  const handleExplanationClick = (dbName) => {
+  const handleExplanationClick = async (dbName) => {
     setSelectedDatabase(dbName);
     setIsModalOpen(true);
+    setSchemas([]);
+    setDbExplanationError(null);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/database-details/${dbName}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch explanation");
+      }
+      const data = await response.json();
+      setSchemas(data.schemas);
+    } catch (error) {
+      console.error("Error fetching database explanation:", error);
+      setDbExplanationError("Failed to load schema details. Please try again.");
+    }
   };
 
   const closeModal = () => {
@@ -123,20 +144,6 @@ export default function GetStarted() {
       </div>
     );
   }
-
-  // Render error state
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen bg-gray100 p-4 pt-24 dark:bg-dark">
-  //       <Header />
-  //       <div className="text-center">
-  //         <p className="text-red-500 dark:text-red-400 text-lg">
-  //           Error: {error}
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <>
@@ -237,7 +244,7 @@ export default function GetStarted() {
         {/* Explanation Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-11/12 max-w-2xl rounded-lg bg-white p-6 dark:bg-dark">
+            <div className="w-11/12 max-w-5xl rounded-lg bg-white p-6 dark:bg-dark">
               <button
                 className="absolute right-2 top-2 text-xl text-gray800 hover:text-black dark:text-body-color dark:hover:text-white"
                 onClick={closeModal}
@@ -249,33 +256,44 @@ export default function GetStarted() {
                 {selectedDatabase} Explanation
               </h2>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-lg bg-lightgray p-4 dark:bg-gray800">
-                  <h3 className="mb-2 text-lg font-semibold text-green dark:text-green">
-                    Database Schema
-                  </h3>
-                  <p className="text-sm text-gray800 dark:text-body-color">
-                    This section shows the schema for the {selectedDatabase}{" "}
-                    database. For example:
-                    <ul className="mt-1 list-inside list-disc">
-                      <li>Table: Users</li>
-                      <li>Columns: ID, Name, Email</li>
-                      <li>Relations: One-to-Many</li>
-                    </ul>
-                  </p>
-                </div>
+              <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+                {dbExplanationError ? (
+                  <p className="text-red-500 text-sm">{dbExplanationError}</p>
+                ) : schemas.length > 0 ? (
+                  schemas.map((schemaObj, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg bg-lightgray p-4 dark:bg-gray800"
+                    >
+                      <h3 className="mb-2 text-lg font-semibold text-green dark:text-green">
+                        Collection: {schemaObj.collection}
+                      </h3>
 
-                <div className="rounded-lg bg-lightgray p-4 dark:bg-gray800">
-                  <h3 className="mb-2 text-lg font-semibold text-green dark:text-green">
-                    Explanation
-                  </h3>
+                      <div className="mb-2 text-sm text-gray800 dark:text-body-color">
+                        <strong>Schema:</strong>
+                        <ul className="mt-1 list-inside list-disc pl-4">
+                          {schemaObj.full_schema &&
+                            Object.entries(schemaObj.full_schema).map(
+                              ([key, value]) => (
+                                <li key={key}>
+                                  {key}: {String(value)}
+                                </li>
+                              )
+                            )}
+                        </ul>
+                      </div>
+
+                      <div className="text-sm text-gray800 dark:text-body-color">
+                        <strong>Explanation:</strong>
+                        <p>{schemaObj.explanation}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
                   <p className="text-sm text-gray800 dark:text-body-color">
-                    {selectedDatabase} is widely used in modern applications. It
-                    supports advanced features such as indexing, queries, and
-                    scalability. Learn more about its key features and how to
-                    utilize them in development.
+                    Loading schema...
                   </p>
-                </div>
+                )}
               </div>
 
               <button

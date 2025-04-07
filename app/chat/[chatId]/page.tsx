@@ -156,7 +156,7 @@ export default function ChatPage() {
           />
           <button
             onClick={handleSendMessage}
-            className="relative -left-20 pl-10 hover:opacity-70"
+            className="rounded-xl border-2 border-black pl-2 pr-2 hover:opacity-70"
           >
             <svg
               stroke="currentColor"

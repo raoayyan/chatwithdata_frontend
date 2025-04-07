@@ -36,11 +36,11 @@ export default function ChatPage() {
   };
 
   // Function to store chats in a separate chat-storage API
-  const storeChat = async (query: string, response: string) => {
+  // Function to store only the query
+  const storeChatQuery = async (query: string) => {
     try {
       const payload: any = {
         user_query: query,
-        bot_response: response,
       };
 
       // Send chatId only for the first message
@@ -57,7 +57,27 @@ export default function ChatPage() {
         body: JSON.stringify(payload),
       });
     } catch (err) {
-      console.error("Failed to store chat:", err);
+      console.error("Failed to store query:", err);
+    }
+  };
+
+  // Function to store only the bot response
+  const storeChatAnswer = async (response: string) => {
+    try {
+      const payload = {
+        bot_response: response,
+        chat_id: chatId, // Required to know which chat this response belongs to
+      };
+
+      await fetch("http://127.0.0.1:8000/api/store_chat/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Failed to store response:", err);
     }
   };
 
@@ -66,6 +86,9 @@ export default function ChatPage() {
 
     const newMessage = { type: "user", text: inputValue };
     setMessages((prev) => [...prev, newMessage]);
+
+    // Store only the user query
+    await storeChatQuery(inputValue);
 
     try {
       const response = await sendQueryToBackend(inputValue, databaseName || "");
@@ -76,8 +99,8 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      // Store chat message
-      await storeChat(inputValue, response.response);
+      // Store only the bot response
+      await storeChatAnswer(response.response);
     } catch (error) {
       const errorMessage = {
         type: "bot",

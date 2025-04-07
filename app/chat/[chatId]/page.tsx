@@ -40,16 +40,16 @@ export default function ChatPage() {
   const storeChatQuery = async (query: string) => {
     try {
       const payload: any = {
-        user_query: query,
+        query: query,
       };
 
       // Send chatId only for the first message
-      if (!firstMessageSent && chatId) {
+      if (chatId) {
         payload.chat_id = chatId;
         setFirstMessageSent(true);
       }
 
-      await fetch("http://127.0.0.1:8000/api/store_chat/", {
+      await fetch("http://127.0.0.1:8000/api/store-chat/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,11 +65,11 @@ export default function ChatPage() {
   const storeChatAnswer = async (response: string) => {
     try {
       const payload = {
-        bot_response: response,
+        response : response,
         chat_id: chatId, // Required to know which chat this response belongs to
       };
 
-      await fetch("http://127.0.0.1:8000/api/store_chat/", {
+      await fetch("http://127.0.0.1:8000/api/store-chat/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,8 +144,8 @@ export default function ChatPage() {
             <div
               className={`ml-40 mr-60 p-3 ${
                 msg.type === "user"
-                  ? "max-w-[50%] rounded-2xl bg-lightgray text-black shadow-md"
-                  : "max-w-[60%] rounded-3xl bg-lightgray font-semibold text-black shadow-md"
+                  ? "max-w-[50%] rounded-2xl bg-customgray text-black shadow-md"
+                  : "max-w-[60%] rounded-2xl bg-customgray font-semibold text-black shadow-md"
               }`}
             >
               <ReactMarkdown>{msg.text}</ReactMarkdown>

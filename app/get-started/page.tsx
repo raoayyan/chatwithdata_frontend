@@ -109,14 +109,19 @@ export default function GetStarted() {
     setDbExplanationError(null);
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/database-details/${dbName}`
-      );
+      const response = await fetch("http://127.0.0.1:8000/api/fetch-explanations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ database_name: dbName }),
+      });
+      
       if (!response.ok) {
         throw new Error("Failed to fetch explanation");
       }
       const data = await response.json();
-      setSchemas(data.schemas);
+      setSchemas(data.explanations.schemas);
     } catch (error) {
       console.error("Error fetching database explanation:", error);
       setDbExplanationError("Failed to load schema details. Please try again.");
@@ -272,8 +277,8 @@ export default function GetStarted() {
                       <div className="mb-2 text-sm text-gray800 dark:text-body-color">
                         <strong>Schema:</strong>
                         <ul className="mt-1 list-inside list-disc pl-4">
-                          {schemaObj.full_schema &&
-                            Object.entries(schemaObj.full_schema).map(
+                          {schemaObj.schema.full_schema &&
+                            Object.entries(schemaObj.schema.full_schema).map(
                               ([key, value]) => (
                                 <li key={key}>
                                   {key}: {String(value)}

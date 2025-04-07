@@ -20,6 +20,7 @@ module.exports = {
       primary: "#4A6CF7",
       yellow: "#FBB040",
       gray: "#808080",
+      customgray: '#A0A0A0',
       lightgray: "rgb(249, 248, 248)",
       "body-color": "#959CB1",
       gray100: "#F3F4F6",

@@ -12,7 +12,7 @@ const AboutSectionTwo = () => {
             >
               <Image
                 src="/images/about/about-image-2.svg"
-                alt="about image"
+                alt="chat with data UI"
                 fill
               />
             </div>
@@ -20,30 +20,32 @@ const AboutSectionTwo = () => {
           <div className="w-full px-4 lg:w-1/2">
             <div className="wow fadeInUp max-w-[470px]" data-wow-delay=".2s">
               <div className="mb-9">
-                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Bug free code
+                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl">
+                  Natural Language Interface
                 </h3>
-                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg">
+                  Ask complex questions like "Show me the top 5 products sold
+                  last month" and get accurate results instantly—no SQL
+                  knowledge needed.
                 </p>
               </div>
               <div className="mb-9">
-                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Premier support
+                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl">
+                  Intelligent Agents with LangChain
                 </h3>
-                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt.
+                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg">
+                  Our agents leverage LLMs and LangChain to handle context,
+                  refine queries, and provide smart, dynamic answers.
                 </p>
               </div>
               <div className="mb-1">
-                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Next.js
+                <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl">
+                  Developer Friendly
                 </h3>
-                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, sed do eiusmod tempor incididunt
-                  consectetur adipiscing elit setim.
+                <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg">
+                  Built with Next.js, Tailwind CSS, Python, and Django for a
+                  clean and scalable architecture. Fast, modern, and easy to
+                  extend.
                 </p>
               </div>
             </div>

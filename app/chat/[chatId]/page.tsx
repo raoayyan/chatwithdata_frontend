@@ -119,10 +119,10 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`ml-20 mr-32 p-3 ${
+              className={`ml-40 mr-60 p-3 ${
                 msg.type === "user"
                   ? "max-w-[50%] rounded-2xl bg-lightgray text-black shadow-md"
-                  : "max-w-[60%] rounded-3xl bg-lightgray text-black shadow-md"
+                  : "max-w-[60%] rounded-3xl bg-lightgray font-semibold text-black shadow-md"
               }`}
             >
               <ReactMarkdown>{msg.text}</ReactMarkdown>

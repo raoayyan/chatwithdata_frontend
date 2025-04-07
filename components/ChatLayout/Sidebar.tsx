@@ -40,15 +40,16 @@ export default function Sidebar({
   // Create a new chat with a readable name
   const handleNewChat = () => {
     const chatId = Date.now().toString();
+    router.push(`/chat/${chatId}`);
     const chatName = `${new Date().toJSON().slice(0, 10)}`;
     const updatedChats = [...previousChats, { id: chatId, name: chatName }];
     setPreviousChats(updatedChats);
     localStorage.setItem("chats", JSON.stringify(updatedChats));
-    router.push(`/chat/${chatId}`);
   };
 
   // Navigate to selected chat
   const handleOpenChat = (chatId: string) => {
+    console.log("Opening chat:", chatId);
     router.push(`/chat/${chatId}`);
   };
 

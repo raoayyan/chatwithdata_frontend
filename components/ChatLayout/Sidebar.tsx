@@ -16,48 +16,80 @@ export default function Sidebar({
   >([]);
   const router = useRouter();
 
-  // Load chats from localStorage on mount
+  // Load chats from backend using DB name from localStorage
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("chats") || "[]");
+    const dbName = localStorage.getItem("currentDatabase");
+    if (!dbName) return;
 
-    if (Array.isArray(stored)) {
-      // If old format (array of strings), convert it
-      if (typeof stored[0] === "string") {
-        const migrated = stored.map((id: string) => ({
-          id,
-          name: `Chat on ${new Date(parseInt(id)).toLocaleString()}`,
-        }));
-        setPreviousChats(migrated);
-        localStorage.setItem("chats", JSON.stringify(migrated));
-      } else {
-        setPreviousChats(stored);
+    const fetchChats = async () => {
+      try {
+        const res = await fetch(`/api/chats?db=${dbName}`);
+        const data = await res.json();
+        // Assuming response format: [{ id: "chatId", name: "Chat name" }]
+        setPreviousChats(data);
+      } catch (err) {
+        console.error("Error fetching chats:", err);
+        setPreviousChats([]);
       }
-    } else {
-      setPreviousChats([]);
-    }
+    };
+
+    fetchChats();
   }, []);
 
-  // Create a new chat with a readable name
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     const chatId = Date.now().toString();
-    router.push(`/chat/${chatId}`);
     const chatName = `${new Date().toJSON().slice(0, 10)}`;
-    const updatedChats = [...previousChats, { id: chatId, name: chatName }];
-    setPreviousChats(updatedChats);
-    localStorage.setItem("chats", JSON.stringify(updatedChats));
-  };
+    const databaseName =
+      typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
-  // Navigate to selected chat
-  const handleOpenChat = (chatId: string) => {
-    console.log("Opening chat:", chatId);
+    const newChat = { id: chatId, name: chatName };
+    const updatedChats = [...previousChats, newChat];
+    setPreviousChats(updatedChats);
+
+    // Save to localStorage for fallback
+    localStorage.setItem("chats", JSON.stringify(updatedChats));
+
+    // Push to backend
+    if (databaseName) {
+      try {
+        await fetch("http://127.0.0.1:8000/api/get-chat/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            db_name: databaseName,
+            chatId,
+            name: chatName,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save chat to backend:", error);
+      }
+    }
+
     router.push(`/chat/${chatId}`);
   };
 
-  // Delete selected chat
-  const handleDeleteChat = (chatId: string) => {
+  const handleOpenChat = (chatId: string) => {
+    router.push(`/chat/${chatId}`);
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
     const updatedChats = previousChats.filter((chat) => chat.id !== chatId);
     setPreviousChats(updatedChats);
     localStorage.setItem("chats", JSON.stringify(updatedChats));
+
+    const dbName = localStorage.getItem("currentDatabase");
+    if (dbName) {
+      try {
+        await fetch(`/api/chats/${chatId}?db=${dbName}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.error("Failed to delete chat from backend:", err);
+      }
+    }
   };
 
   return (

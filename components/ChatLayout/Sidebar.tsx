@@ -15,14 +15,22 @@ export default function Sidebar({
   const router = useRouter();
 
   useEffect(() => {
-    const dbName = localStorage.getItem("databaseName");
-    if (!dbName) return;
-
     const fetchChats = async () => {
+      const dbName =
+        typeof window !== "undefined"
+          ? localStorage.getItem("databaseName")
+          : "";
+      if (!dbName) return;
+
       try {
-        const res = await fetch(
-          `http://127.0.0.1:8000/api/get-all-chats/?db_name=${dbName}`
-        );
+        const res = await fetch("http://127.0.0.1:8000/api/get-chat/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ db_name: dbName }),
+        });
+
         const data = await res.json();
 
         const chats = data.chats.map((chat: any) => ({
@@ -41,7 +49,7 @@ export default function Sidebar({
 
   const handleNewChat = async () => {
     const chatId = Date.now().toString();
-    const dbName = localStorage.getItem("databaseName");
+    const dbName = localStorage.getItem("currentDatabase");
 
     const newChat = { id: chatId };
     const updatedChats = [...previousChats, newChat];
@@ -80,12 +88,16 @@ export default function Sidebar({
     const dbName = localStorage.getItem("currentDatabase");
     if (dbName) {
       try {
-        await fetch(
-          `http://127.0.0.1:8000/api/delete-chat/?db_name=${dbName}&chat_id=${chatId}`,
-          {
-            method: "DELETE",
-          }
-        );
+        await fetch("http://127.0.0.1:8000/api/delete-chat/", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            db_name: dbName,
+            chat_id: chatId,
+          }),
+        });
       } catch (err) {
         console.error("Failed to delete chat from backend:", err);
       }

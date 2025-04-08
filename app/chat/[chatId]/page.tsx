@@ -41,10 +41,12 @@ export default function ChatPage() {
     try {
       const payload: any = {
         query: query,
+        db_name: databaseName,
       };
 
       // Send chatId only for the first message
       if (chatId) {
+        payload.db_name = databaseName;
         payload.chat_id = chatId;
         setFirstMessageSent(true);
       }
@@ -65,7 +67,7 @@ export default function ChatPage() {
   const storeChatAnswer = async (response: string) => {
     try {
       const payload = {
-        response : response,
+        response: response,
         chat_id: chatId, // Required to know which chat this response belongs to
       };
 

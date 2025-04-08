@@ -105,7 +105,7 @@ export default function Sidebar({
                   className="hover:bg-gray-700 m-2 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
                 >
                   <span onClick={() => handleOpenChat(chat.id)}>
-                    {chat.name}
+                    Chat ID : {chat.id}
                   </span>
                   <button
                     onClick={() => handleDeleteChat(chat.id)}

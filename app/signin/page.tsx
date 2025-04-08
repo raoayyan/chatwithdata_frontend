@@ -33,8 +33,8 @@ const SigninPage = () => {
         throw new Error(data.message || "Something went wrong");
       }
 
-      // Store token in localStorage
-      localStorage.setItem("token", data.token);
+      // Store token in cookies instead of localStorage
+      document.cookie = `token=${data.token}; path=/; max-age=86400`; // 1 day expiry
 
       // Set success message and redirect or do whatever you need after login
       setSuccess("Login successful!");

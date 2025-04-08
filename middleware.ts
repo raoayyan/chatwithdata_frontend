@@ -11,8 +11,9 @@ const protectedRoutes = [
 ];
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = req.cookies.get("token"); // Get token from cookies
   console.log("Token from middleware:", token);
+
   if (protectedRoutes.includes(req.nextUrl.pathname) && !token) {
     // Redirect with a query parameter to show an alert/message on the next page
     const url = new URL("/", req.url);

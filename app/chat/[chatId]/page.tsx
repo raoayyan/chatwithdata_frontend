@@ -12,7 +12,6 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState<string>("");
   const [canvasData, setCanvasData] = useState(null);
   const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-  const [firstMessageSent, setFirstMessageSent] = useState(false);
   const databaseName =
     typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
@@ -48,7 +47,6 @@ export default function ChatPage() {
       if (chatId) {
         payload.db_name = databaseName;
         payload.chat_id = chatId;
-        setFirstMessageSent(true);
       }
 
       await fetch("http://127.0.0.1:8000/api/store-chat/", {
@@ -82,6 +80,52 @@ export default function ChatPage() {
       console.error("Failed to store response:", err);
     }
   };
+
+  // Fetch previous chats when the page loads
+  useEffect(() => {
+    const fetchPreviousChats = async () => {
+      if (!chatId || !databaseName) return;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/get-chat/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            db_name: databaseName,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.message === "Chats retrieved successfully!") {
+          const chats = data.chats.find((chat: any) => chat.chat_id === chatId);
+
+          if (chats) {
+            const chatMessages = [];
+            // Loop through queries and responses
+            for (let i = 0; i < chats.queries.length; i++) {
+              // Add user query (right side)
+              chatMessages.push({
+                type: "user",
+                text: chats.queries[i],
+              });
+              // Add bot response (left side)
+              chatMessages.push({
+                type: "bot",
+                text: chats.responses[i],
+              });
+            }
+            setMessages(chatMessages);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch chat history:", err);
+      }
+    };
+
+    fetchPreviousChats();
+  }, [chatId, databaseName]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;

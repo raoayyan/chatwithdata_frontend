@@ -49,7 +49,8 @@ export default function Sidebar({
 
   const handleNewChat = async () => {
     const chatId = Date.now().toString();
-    const dbName = localStorage.getItem("currentDatabase");
+    const dbName =
+      typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
     const newChat = { id: chatId };
     const updatedChats = [...previousChats, newChat];

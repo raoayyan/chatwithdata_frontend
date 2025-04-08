@@ -11,22 +11,25 @@ export default function Sidebar({
   isOpen: boolean;
   setIsOpenAction: (state: boolean) => void;
 }) {
-  const [previousChats, setPreviousChats] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
+  const [previousChats, setPreviousChats] = useState<Array<{ id: string }>>([]);
   const router = useRouter();
 
-  // Load chats from backend using DB name from localStorage
   useEffect(() => {
-    const dbName = localStorage.getItem("currentDatabase");
+    const dbName = localStorage.getItem("databaseName");
     if (!dbName) return;
 
     const fetchChats = async () => {
       try {
-        const res = await fetch(`/api/chats?db=${dbName}`);
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/get-all-chats/?db_name=${dbName}`
+        );
         const data = await res.json();
-        // Assuming response format: [{ id: "chatId", name: "Chat name" }]
-        setPreviousChats(data);
+
+        const chats = data.chats.map((chat: any) => ({
+          id: chat.chat_id,
+        }));
+
+        setPreviousChats(chats);
       } catch (err) {
         console.error("Error fetching chats:", err);
         setPreviousChats([]);
@@ -38,19 +41,14 @@ export default function Sidebar({
 
   const handleNewChat = async () => {
     const chatId = Date.now().toString();
-    const chatName = `${new Date().toJSON().slice(0, 10)}`;
-    const databaseName =
-      typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
+    const dbName = localStorage.getItem("databaseName");
 
-    const newChat = { id: chatId, name: chatName };
+    const newChat = { id: chatId };
     const updatedChats = [...previousChats, newChat];
     setPreviousChats(updatedChats);
-
-    // Save to localStorage for fallback
     localStorage.setItem("chats", JSON.stringify(updatedChats));
 
-    // Push to backend
-    if (databaseName) {
+    if (dbName) {
       try {
         await fetch("http://127.0.0.1:8000/api/get-chat/", {
           method: "POST",
@@ -58,9 +56,8 @@ export default function Sidebar({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            db_name: databaseName,
+            db_name: dbName,
             chatId,
-            name: chatName,
           }),
         });
       } catch (error) {
@@ -83,9 +80,12 @@ export default function Sidebar({
     const dbName = localStorage.getItem("currentDatabase");
     if (dbName) {
       try {
-        await fetch(`/api/chats/${chatId}?db=${dbName}`, {
-          method: "DELETE",
-        });
+        await fetch(
+          `http://127.0.0.1:8000/api/delete-chat/?db_name=${dbName}&chat_id=${chatId}`,
+          {
+            method: "DELETE",
+          }
+        );
       } catch (err) {
         console.error("Failed to delete chat from backend:", err);
       }
@@ -137,7 +137,7 @@ export default function Sidebar({
                   className="hover:bg-gray-700 m-2 mb-2 mt-2 flex cursor-pointer items-center justify-between rounded px-4 py-2 text-white"
                 >
                   <span onClick={() => handleOpenChat(chat.id)}>
-                    Chat ID : {chat.id}
+                    Chat ID: {chat.id}
                   </span>
                   <button
                     onClick={() => handleDeleteChat(chat.id)}

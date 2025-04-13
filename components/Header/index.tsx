@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
+import Cookies from "js-cookie";
 
 const Header = () => {
   // Navbar toggle
@@ -24,12 +25,13 @@ const Header = () => {
   };
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
-    const token = localStorage.getItem("token"); // or use cookies if preferred
+    const token = Cookies.get("token");
+    
     setIsLoggedIn(!!token);
   });
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    Cookies.remove("token");
     window.location.href = "/"; // redirect to home after logout
   };
 

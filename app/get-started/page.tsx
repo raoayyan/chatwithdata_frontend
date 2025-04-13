@@ -36,7 +36,7 @@ export default function GetStarted() {
         const data = await response.json();
         const databases = data.databases.map((db) => ({
           name: db.db_name,
-          type: "NOSQL", // or dynamically assign if available
+          type: db.db_type, // or dynamically assign if available
         }));
         setDatabases(databases);
         // setDatabases(data);

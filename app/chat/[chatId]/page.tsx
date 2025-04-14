@@ -12,10 +12,27 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState<string>("");
   const [canvasData, setCanvasData] = useState(null);
   const [isCanvasOpen, setIsCanvasOpen] = useState(false);
+  const [sampleQuestions, setSampleQuestions] = useState<string[]>([]); // 🆕 NEW STATE
   const databaseName =
     typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
-  // Function to send query to the backend for processing
+  // 🆕 Fetch sample questions on page load
+  useEffect(() => {
+    const fetchSampleQuestions = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/sample-questions/");
+        const data = await res.json();
+        if (data.sample_questions) {
+          setSampleQuestions(data.sample_questions);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sample questions:", error);
+      }
+    };
+
+    fetchSampleQuestions();
+  }, []);
+
   const sendQueryToBackend = async (query: string, dbName: string) => {
     const response = await fetch(
       "http://127.0.0.1:8000/api/chat_with_database/",
@@ -34,8 +51,6 @@ export default function ChatPage() {
     return data;
   };
 
-  // Function to store chats in a separate chat-storage API
-  // Function to store only the query
   const storeChatQuery = async (query: string) => {
     try {
       const payload: any = {
@@ -43,7 +58,6 @@ export default function ChatPage() {
         db_name: databaseName,
       };
 
-      // Send chatId only for the first message
       if (chatId) {
         payload.db_name = databaseName;
         payload.chat_id = chatId;
@@ -61,12 +75,11 @@ export default function ChatPage() {
     }
   };
 
-  // Function to store only the bot response
   const storeChatAnswer = async (response: string) => {
     try {
       const payload = {
         response: response,
-        chat_id: chatId, // Required to know which chat this response belongs to
+        chat_id: chatId,
       };
 
       await fetch("http://127.0.0.1:8000/api/store-chat/", {
@@ -81,7 +94,6 @@ export default function ChatPage() {
     }
   };
 
-  // Fetch previous chats when the page loads
   useEffect(() => {
     const fetchPreviousChats = async () => {
       if (!chatId || !databaseName) return;
@@ -103,14 +115,11 @@ export default function ChatPage() {
 
           if (chats) {
             const chatMessages = [];
-            // Loop through queries and responses
             for (let i = 0; i < chats.queries.length; i++) {
-              // Add user query (right side)
               chatMessages.push({
                 type: "user",
                 text: chats.queries[i],
               });
-              // Add bot response (left side)
               chatMessages.push({
                 type: "bot",
                 text: chats.responses[i],
@@ -133,7 +142,11 @@ export default function ChatPage() {
     const newMessage = { type: "user", text: inputValue };
     setMessages((prev) => [...prev, newMessage]);
 
-    // Store only the user query
+    // Clear sample questions when first message is sent
+    if (sampleQuestions.length > 0) {
+      setSampleQuestions([]);
+    }
+
     await storeChatQuery(inputValue);
 
     try {
@@ -145,7 +158,6 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      // Store only the bot response
       await storeChatAnswer(response.response);
     } catch (error) {
       const errorMessage = {
@@ -169,12 +181,27 @@ export default function ChatPage() {
         Database Name : {databaseName}
       </h1>
 
-      {messages.length === 0 && (
-        <div className="flex flex-grow flex-col items-center justify-center">
+      {/* Sample Questions Section - Show only if no messages yet */}
+      {messages.length === 0 && sampleQuestions.length > 0 && (
+        <div className="flex flex-grow flex-col items-center justify-center p-4 text-center">
           <h1 className="mb-6 text-5xl font-bold">Chat With Data</h1>
-          <p className="text-gray">
-            Ask your question, and I'll provide the best solution!
+          <p className="text-gray-600 mb-4 text-lg">
+            You can try asking questions like:
           </p>
+          <ul className="space-y-2">
+            {sampleQuestions.map((q, idx) => (
+              <li
+                key={idx}
+                className="hover:bg-gray-200 cursor-pointer rounded bg-lightgray px-4 py-2"
+                onClick={() => {
+                  setInputValue(q);
+                  handleSendMessage();
+                }}
+              >
+                {q}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -210,22 +237,24 @@ export default function ChatPage() {
       </div>
 
       {/* Input Field */}
-      <div className="input mb-4 flex w-full items-center justify-center">
-        <div className="buttonsvg flex w-[50vw]">
-          <input
-            className="w-full rounded-xl border-2 border-black bg-lightgray p-4"
-            placeholder="Send a Message"
-            type="text"
-            name="text"
+      <div className="mb-2 flex w-full items-center justify-center">
+        <div className="relative w-full max-w-2xl rounded-2xl">
+          <textarea
+            rows={4}
+            className="w-full resize-none rounded-xl border-2 border-gray bg-white p-3 pr-12 text-sm text-black outline-none"
+            placeholder="Type your question here..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleSendMessage();
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault(); // prevent newline
+                handleSendMessage();
+              }
             }}
           />
           <button
             onClick={handleSendMessage}
-            className="rounded-xl border-2 border-black pl-2 pr-2 hover:opacity-70"
+            className="absolute bottom-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md transition-all hover:bg-dark"
           >
             <svg
               stroke="currentColor"
@@ -234,7 +263,7 @@ export default function ChatPage() {
               viewBox="0 0 24 24"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mr-1 h-4 w-4"
+              className="h-4 w-4"
               xmlns="http://www.w3.org/2000/svg"
             >
               <line x1="22" y1="2" x2="11" y2="13"></line>

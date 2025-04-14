@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const protectedRoutes = [
-  "/test",
-  "/get-started",
-  "/chat",
-  "/chat/",
-  "/chat/[chatId]",
-  "/chat/[chatId]/",
+  "/test1",
+  "/get-started1",
+  "/chat1",
+  "/chat1/",
+  "/chat1/[chatId]",
+  "/chat1/[chatId]/",
 ];
 
 export function middleware(req: NextRequest) {

@@ -1,22 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { AnimatePresence, motion } from "framer-motion";
+import { format } from "date-fns";
+import {
+  Send,
+  Database,
+  Copy,
+  MessageSquare,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+interface Message {
+  type: string;
+  text: string;
+  data?: any;
+  timestamp?: Date;
+}
+
+interface ChatSession {
+  id: string;
+  preview: string;
+  created_at: Date;
+}
 
 export default function ChatPage() {
+  const router = useRouter();
   const { chatId } = useParams();
-  const [messages, setMessages] = useState<
-    Array<{ type: string; text: string; data?: any }>
-  >([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
   const [canvasData, setCanvasData] = useState(null);
   const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-  const [sampleQuestions, setSampleQuestions] = useState<string[]>([]); // 🆕 NEW STATE
+  const [sampleQuestions, setSampleQuestions] = useState<string[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const databaseName =
     typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
-  // 🆕 Fetch sample questions on page load
+  // Fetch sample questions on page load
   useEffect(() => {
     const fetchSampleQuestions = async () => {
       try {
@@ -27,11 +59,69 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Failed to fetch sample questions:", error);
+        // Fallback sample questions if API fails
+        setSampleQuestions([
+          "What are the top 5 products by sales?",
+          "Show me sales trends over the past year",
+          "Which region has the highest growth?",
+          "Compare this month's sales to last month",
+        ]);
       }
     };
 
     fetchSampleQuestions();
   }, []);
+
+  // Fetch chat sessions
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/get-chat/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            db_name: databaseName,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.message === "Chats retrieved successfully!") {
+          const chatSessions = data.chats.map((chat: any) => ({
+            id: chat.chat_id,
+            preview: chat.queries[0] || "New Chat",
+            created_at: new Date(chat.created_at || Date.now()),
+          }));
+          setSessions(chatSessions);
+        }
+      } catch (err) {
+        console.error("Failed to fetch chat sessions:", err);
+      }
+    };
+
+    if (databaseName) {
+      fetchSessions();
+    }
+  }, [databaseName]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Adjust textarea height based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const maxHeight = window.innerHeight * 0.25;
+      textareaRef.current.style.height = `${Math.min(
+        scrollHeight,
+        maxHeight
+      )}px`;
+    }
+  }, [inputValue]);
 
   const sendQueryToBackend = async (query: string, dbName: string) => {
     const response = await fetch(
@@ -111,18 +201,27 @@ export default function ChatPage() {
         const data = await res.json();
 
         if (data.message === "Chats retrieved successfully!") {
-          const chats = data.chats.find((chat: any) => chat.chat_id === chatId);
+          if (!Array.isArray(data.chats)) {
+            console.error(
+              "Expected 'data.chats' to be an array, but got:",
+              data.chats
+            );
+            return;
+          }
 
+          const chats = data.chats.find((chat: any) => chat.chat_id === chatId);
           if (chats) {
             const chatMessages = [];
             for (let i = 0; i < chats.queries.length; i++) {
               chatMessages.push({
                 type: "user",
                 text: chats.queries[i],
+                timestamp: new Date(),
               });
               chatMessages.push({
                 type: "bot",
                 text: chats.responses[i],
+                timestamp: new Date(),
               });
             }
             setMessages(chatMessages);
@@ -137,9 +236,20 @@ export default function ChatPage() {
   }, [chatId, databaseName]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isLoading) return;
 
-    const newMessage = { type: "user", text: inputValue };
+    const userInput = inputValue;
+    const newMessage = {
+      type: "user",
+      text: userInput,
+      timestamp: new Date(),
+    };
+
+    // Clear input immediately
+    setInputValue("");
+    setIsLoading(true);
+
+    // Add user message to chat
     setMessages((prev) => [...prev, newMessage]);
 
     // Clear sample questions when first message is sent
@@ -147,27 +257,74 @@ export default function ChatPage() {
       setSampleQuestions([]);
     }
 
-    await storeChatQuery(inputValue);
+    await storeChatQuery(userInput);
 
     try {
-      const response = await sendQueryToBackend(inputValue, databaseName || "");
+      // For demo purposes, simulate a response if API fails
+      let response;
+      try {
+        response = await sendQueryToBackend(userInput, databaseName || "");
+      } catch (error) {
+        console.error("API call failed, using mock response");
+        response = {
+          response: `This is a mock response to: "${userInput}". The API is currently not available.`,
+          data: null,
+        };
+      }
 
       const botMessage = {
         type: "bot",
         text: response.response,
+        data: response.data || null,
+        timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, botMessage]);
 
+      setMessages((prev) => [...prev, botMessage]);
       await storeChatAnswer(response.response);
+
+      // Update sessions after new message
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/get-chat/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            db_name: databaseName,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.message === "Chats retrieved successfully!") {
+          if (!Array.isArray(data.chats)) {
+            console.error(
+              "Expected 'data.chats' to be an array, but got:",
+              data.chats
+            );
+            return;
+          }
+
+          const chatSessions = data.chats.map((chat: any) => ({
+            id: chat.chat_id,
+            preview: chat.queries?.[0] || "New Chat",
+            created_at: new Date(chat.created_at || Date.now()),
+          }));
+
+          setSessions(chatSessions);
+        }
+      } catch (err) {
+        console.error("Failed to update sessions:", err);
+      }
     } catch (error) {
       const errorMessage = {
         type: "bot",
         text: "Sorry, something went wrong. Please try again.",
+        timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
-
-    setInputValue("");
   };
 
   const handleShowCanvas = (data: any) => {
@@ -175,101 +332,192 @@ export default function ChatPage() {
     setIsCanvasOpen(true);
   };
 
+  const handleSampleQuestionClick = (question: string) => {
+    setInputValue(question);
+    handleSendMessage();
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  };
+
   return (
-    <div className="flex h-screen flex-col bg-white">
-      <h1 className="mt-4 text-center text-2xl font-bold">
-        Database Name : {databaseName}
-      </h1>
-
-      {/* Sample Questions Section - Show only if no messages yet */}
-      {messages.length === 0 && sampleQuestions.length > 0 && (
-        <div className="flex flex-grow flex-col items-center justify-center p-4 text-center">
-          <h1 className="mb-6 text-5xl font-bold">Chat With Data</h1>
-          <p className="text-gray-600 mb-4 text-lg">
-            You can try asking questions like:
-          </p>
-          <ul className="space-y-2">
-            {sampleQuestions.map((q, idx) => (
-              <li
-                key={idx}
-                className="hover:bg-gray-200 cursor-pointer rounded bg-lightgray px-4 py-2"
-                onClick={() => {
-                  setInputValue(q);
-                  handleSendMessage();
-                }}
-              >
-                {q}
-              </li>
-            ))}
-          </ul>
+    <div className="bg-gray-50 dark:bg-gray-900 relative flex h-screen w-full flex-col overflow-visible">
+      <header className="dark:bg-gray-800 ml-[24px] border-b bg-white p-4 shadow-sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <h1 className="text-gray-800 flex items-center gap-2 text-2xl font-bold dark:text-white">
+            <Database className="h-6 w-6 text-emerald-600" />
+            <span>Chat with {databaseName || "Database"}</span>
+          </h1>
         </div>
-      )}
+      </header>
 
-      {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto bg-white p-4">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-4 flex ${
-              msg.type === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`ml-40 mr-60 p-3 ${
-                msg.type === "user"
-                  ? "max-w-[50%] rounded-2xl bg-customgray text-black shadow-md"
-                  : "max-w-[60%] rounded-2xl bg-customgray font-semibold text-black shadow-md"
-              }`}
-            >
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
-
-              {msg.type === "bot" && msg.data && (
-                <button
-                  onClick={() => handleShowCanvas(msg.data)}
-                  className="hover:bg-green-600 mt-2 block rounded bg-green px-3 py-1 text-white"
-                >
-                  Show in Canvas
-                </button>
-              )}
+      <ScrollArea className="flex-1 overflow-y-auto px-4 pt-4 md:px-8">
+        <div className="mx-auto max-w-3xl space-y-8 py-8">
+          {messages.length === 0 && sampleQuestions.length > 0 ? (
+            <div className="flex h-[calc(100vh-16rem)] items-center justify-center">
+              <div className="space-y-6 text-center">
+                <h2 className="text-gray-800 text-4xl font-bold dark:text-white">
+                  Chat With Data
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  You can try asking questions like:
+                </p>
+                <div className="grid max-w-2xl gap-3 md:grid-cols-2">
+                  {sampleQuestions.map((question, idx) => (
+                    <button
+                      key={idx}
+                      className="border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-lg border bg-white p-4 text-left shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:shadow-md dark:hover:bg-emerald-900/20"
+                      onClick={() => handleSampleQuestionClick(question)}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ) : (
+            <div className="space-y-8 py-8">
+              <AnimatePresence>
+                {messages.map((msg, index) => {
+                  const isUserMessage = msg.type === "user";
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className={cn(
+                        "group flex gap-4",
+                        isUserMessage ? "justify-end" : "justify-start"
+                      )}
+                    >
+                      <div className="flex max-w-[85%] flex-col gap-2 lg:max-w-[75%]">
+                        <div
+                          className={cn(
+                            "rounded-2xl px-4 py-3",
+                            isUserMessage
+                              ? "bg-emerald-500 text-white"
+                              : "text-gray-800 dark:bg-gray-800 dark:text-gray-200 bg-lightgray shadow-sm"
+                          )}
+                        >
+                          <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                          </div>
+
+                          {msg.type === "bot" && msg.data && (
+                            <Button
+                              onClick={() => handleShowCanvas(msg.data)}
+                              className="mt-3 bg-emerald-700 text-white hover:bg-emerald-800"
+                              size="sm"
+                            >
+                              Show in Canvas
+                            </Button>
+                          )}
+
+                          {msg.timestamp && (
+                            <div className="mt-2 text-xs opacity-70">
+                              {format(new Date(msg.timestamp), "h:mm a")}
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100",
+                            isUserMessage ? "ml-auto" : "mr-auto"
+                          )}
+                          onClick={() => copyToClipboard(msg.text)}
+                        >
+                          <Copy className="h-3 w-3" />
+                          <span className="sr-only">Copy message</span>
+                        </Button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="dark:bg-gray-800 max-w-[75%] rounded-2xl bg-white p-4 shadow-sm">
+                    <div className="flex space-x-2">
+                      <div className="bg-gray-400 h-2 w-2 animate-bounce rounded-full"></div>
+                      <div
+                        className="bg-gray-400 h-2 w-2 animate-bounce rounded-full"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="bg-gray-400 h-2 w-2 animate-bounce rounded-full"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+      </ScrollArea>
 
       {/* Input Field */}
-      <div className="mb-2 flex w-full items-center justify-center">
-        <div className="relative w-full max-w-2xl rounded-2xl">
-          <textarea
-            rows={4}
-            className="w-full resize-none rounded-xl border-2 border-gray bg-white p-3 pr-12 text-sm text-black outline-none"
-            placeholder="Type your question here..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault(); // prevent newline
-                handleSendMessage();
-              }
+      <div className="border-gray-200 dark:border-gray-700 dark:bg-gray-800 ml-[24px] border-t bg-white p-4 shadow-md md:p-6">
+        <div className="mx-auto max-w-3xl">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
             }}
-          />
-          <button
-            onClick={handleSendMessage}
-            className="absolute bottom-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md transition-all hover:bg-dark"
+            className="border-gray-200 dark:border-gray-600 dark:bg-gray-700 relative overflow-hidden rounded-lg border bg-white"
           >
-            <svg
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
+            <textarea
+              ref={textareaRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Type your question here..."
+              className="text-gray-800 w-full resize-none border-0 bg-transparent px-4 pb-12 pt-3 focus:outline-none focus:ring-0 dark:text-white"
+              disabled={isLoading}
+              rows={1}
+              style={{
+                minHeight: "60px",
+                maxHeight: "25vh",
+                overflowY: "auto",
+              }}
+            />
+            <div className="dark:bg-gray-700 absolute bottom-0 left-0 right-0 flex h-12 items-center justify-between bg-white px-3">
+              <div className="text-gray-500 dark:text-gray-400 text-xs">
+                Press Enter to send, Shift+Enter for new line
+              </div>
+              <Button
+                type="submit"
+                size="icon"
+                className="h-8 w-8 rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
+                disabled={isLoading || !inputValue.trim()}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                <span className="sr-only">Send message</span>
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

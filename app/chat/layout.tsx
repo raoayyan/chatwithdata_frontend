@@ -8,17 +8,17 @@ interface ChatLayoutProps {
 }
 
 const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900 flex h-screen w-full">
       <Sidebar isOpen={isSidebarOpen} setIsOpenAction={setIsSidebarOpen} />
       <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "ml-[20%] w-[80%]" : "w-full"
+        className={`flex-1 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-[250px]" : "ml-0"
         }`}
       >
-        {children}
+        <div className="h-full w-full overflow-hidden">{children}</div>
       </div>
     </div>
   );

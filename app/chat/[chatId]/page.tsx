@@ -51,23 +51,37 @@ export default function ChatPage() {
   const databaseType =
     typeof window !== "undefined" ? localStorage.getItem("databaseType") : "";
 
-  // Fetch sample questions on page load
   useEffect(() => {
     const fetchSampleQuestions = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/sample-questions/");
-        const data = await res.json();
-        if (data.sample_questions) {
-          setSampleQuestions(data.sample_questions);
+        // Fetch sample questions on page load
+        if (databaseName === "MonitoringSystem") {
+          setSampleQuestions([
+            "give me the details of healthy server whose memory usage is less thatn 50",
+            "is there is any error where SSL handshake failed",
+            "give me all completed payments",
+            "which user Accessed Admin Panel?",
+          ]);
+        } else if (databaseName === "sample") {
+          setSampleQuestions([
+            "give me the detials of Jennifer Whalen dependents",
+            "Give me all employee that belong to IT department",
+            "what is maximum salary of employee Bruce Ernst",
+            "Give me all employee that belong to Administration department",
+          ]);
+        } else if (databaseName === "perls") {
+          setSampleQuestions([
+            "Give me names of all customers whose total amount is less than 30",
+            "Which customer bought the most items",
+            "Which store have Product  F ?",
+            "what is the price of Product B?",
+          ]);
         }
       } catch (error) {
         console.error("Failed to fetch sample questions:", error);
         // Fallback sample questions if API fails
         setSampleQuestions([
-          "What are the top 5 products by sales?",
-          "Show me sales trends over the past year",
-          "Which region has the highest growth?",
-          "Compare this month's sales to last month",
+         ""
         ]);
       }
     };

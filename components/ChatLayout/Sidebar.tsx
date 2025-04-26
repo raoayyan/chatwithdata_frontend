@@ -86,16 +86,15 @@ export default function Sidebar({
     setPreviousChats(updatedChats);
     localStorage.setItem("chats", JSON.stringify(updatedChats));
 
-    const dbName = localStorage.getItem("currentDatabase");
-    if (dbName) {
+  
+    if (chatId) {
       try {
         await fetch("http://127.0.0.1:8000/api/delete-chat/", {
-          method: "DELETE",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            db_name: dbName,
             chat_id: chatId,
           }),
         });

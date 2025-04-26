@@ -354,7 +354,7 @@ export default function ChatPage() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 relative flex h-screen w-full flex-col overflow-visible">
-      <header className="dark:bg-gray-800 ml-[24px] border-b bg-white p-4 shadow-sm">
+      <header className="dark:bg-gray-800 ml-[40px] border-b bg-white p-4 shadow-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <h1 className="text-gray-800 flex items-center gap-2 text-2xl font-bold dark:text-white">
             <Database className="h-6 w-6 text-emerald-600" />

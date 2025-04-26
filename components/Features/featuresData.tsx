@@ -222,9 +222,9 @@ const featuresData: Feature[] = [
         ></path>
       </svg>
     ),
-    title: "LLM and Langchain Agents",
+    title: "LLM and Grokai",
     paragraph:
-      "Leverage the power of LLM and Langchain agents to interact with your mutiple types of databases using simple and intuitive commands.",
+      "Leverage the power of LLM and Open source model for security and privacy, ensuring that your data remains confidential and protected while still benefiting from advanced AI capabilities.",
   },
 ];
 

@@ -423,8 +423,8 @@ export default function ChatPage() {
                           className={cn(
                             "rounded-2xl px-4 py-3",
                             isUserMessage
-                              ? "bg-emerald-500 text-white"
-                              : "dark:bg-gray-800 bg-gray text-white shadow-sm"
+                              ? "bg-gray text-white font-semibold"
+                              : "dark:bg-gray-800 bg-gray text-white font-semibold shadow-sm"
                           )}
                         >
                           <div className="prose prose-sm max-w-none text-white dark:prose-invert">

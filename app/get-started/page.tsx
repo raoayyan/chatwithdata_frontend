@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-import { c } from "framer-motion/dist/types.d-6pKw1mTI";
+// import { c } from "framer-motion/dist/types.d-6pKw1mTI";
 
 export default function GetStarted() {
   const [databases, setDatabases] = useState([
@@ -109,14 +109,17 @@ export default function GetStarted() {
     setDbExplanationError(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/fetch-explanations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ database_name: dbName }),
-      });
-      
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/fetch-explanations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ database_name: dbName }),
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Failed to fetch explanation");
       }
@@ -205,7 +208,7 @@ export default function GetStarted() {
                     <Link
                       href={{
                         pathname: "/chat",
-                        query: { database: db.name },
+                        query: { database: db.name, type: db.type },
                       }}
                       className="flex-1 rounded-md bg-green px-3 py-1.5 text-center text-sm text-white transition-all hover:bg-opacity-90"
                     >

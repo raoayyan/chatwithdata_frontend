@@ -48,6 +48,9 @@ export default function ChatPage() {
   const databaseName =
     typeof window !== "undefined" ? localStorage.getItem("databaseName") : "";
 
+  const databaseType =
+    typeof window !== "undefined" ? localStorage.getItem("databaseType") : "";
+
   // Fetch sample questions on page load
   useEffect(() => {
     const fetchSampleQuestions = async () => {
@@ -131,7 +134,11 @@ export default function ChatPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_query: query, database_name: dbName }),
+        body: JSON.stringify({
+          user_query: query,
+          database_name: dbName,
+          databaseType: databaseType,
+        }),
       }
     );
 

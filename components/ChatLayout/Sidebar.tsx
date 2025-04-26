@@ -116,7 +116,7 @@ export default function Sidebar({
 
       <motion.div
         animate={{ width: isOpen ? "20%" : "0px" }}
-        className="fixed left-0 top-0 h-screen overflow-hidden bg-[#282a2e] text-white"
+        className="sticky left-0 top-0 h-screen overflow-hidden bg-[#282a2e] text-white"
       >
         {isOpen && (
           <div className="flex h-full flex-col pt-16">

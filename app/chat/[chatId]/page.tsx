@@ -354,7 +354,7 @@ export default function ChatPage() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 relative flex h-screen w-full flex-col overflow-visible">
-      <header className="dark:bg-gray-800 ml-[60px] border-b bg-white p-4 shadow-sm">
+      <header className="dark:bg-gray-800 ml-[60px] bg-white p-4 ">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <h1 className="text-gray-800 flex items-center gap-2 text-2xl font-bold dark:text-white">
             <Database className="h-6 w-6 text-emerald-600" />
@@ -410,10 +410,10 @@ export default function ChatPage() {
                             "rounded-2xl px-4 py-3",
                             isUserMessage
                               ? "bg-emerald-500 text-white"
-                              : "text-gray-800 dark:bg-gray-800 dark:text-gray-200 bg-lightgray shadow-sm"
+                              : "dark:bg-gray-800 bg-gray text-white shadow-sm"
                           )}
                         >
-                          <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <div className="prose prose-sm max-w-none text-white dark:prose-invert">
                             <ReactMarkdown>{msg.text}</ReactMarkdown>
                           </div>
 
@@ -477,7 +477,7 @@ export default function ChatPage() {
       </ScrollArea>
 
       {/* Input Field */}
-      <div className="border-gray-200 dark:border-gray-700 dark:bg-gray-800 ml-[24px] border-t bg-white p-4 shadow-md md:p-6">
+      <div className="dark:bg-gray-800 ml-[60px] bg-white p-4 md:p-6">
         <div className="mx-auto max-w-3xl">
           <form
             onSubmit={(e) => {

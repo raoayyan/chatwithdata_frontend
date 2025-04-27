@@ -5,7 +5,7 @@ const Hero = () => {
     <>
       <section
         id="home"
-        className="relative z-10 overflow-hidden pt-[120px] pb-16 md:pt-[150px] md:pb-[120px] xl:pt-[180px] xl:pb-[160px] 2xl:pt-[210px] 2xl:pb-[200px]"
+        className="relative z-10 overflow-hidden pb-16 pt-[120px] md:pb-[120px] md:pt-[150px] xl:pb-[160px] xl:pt-[180px] 2xl:pb-[200px] 2xl:pt-[210px]"
       >
         <div className="container">
           <div className="-mx-4 flex flex-wrap">
@@ -19,7 +19,7 @@ const Hero = () => {
                   NoSQL Databases
                 </h1>
                 <p className="mb-12 text-base font-medium !leading-relaxed text-body-color dark:text-white dark:opacity-90 sm:text-lg md:text-lg">
-                  "Chat with Data" allows users to interact seamlessly with
+                  Chat with Data allows users to interact seamlessly with
                   multiple types of databases, including SQL and NoSQL, using
                   simple natural language. Perfect for users who want powerful
                   database queries without complex coding, our platform makes
@@ -28,7 +28,7 @@ const Hero = () => {
                 <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <Link
                     href="/get-started"
-                    className="rounded-md border-2 border-transparent bg-green py-2 px-8 text-base font-semibold text-white duration-300 ease-in-out hover:border-2 hover:border-green hover:bg-white hover:text-black"
+                    className="rounded-md border-2 border-transparent bg-green px-8 py-2 text-base font-semibold text-white duration-300 ease-in-out hover:border-2 hover:border-green hover:bg-white hover:text-black"
                   >
                     Get Started
                   </Link>
@@ -37,7 +37,7 @@ const Hero = () => {
             </div>
           </div>
         </div>
-        <div className="absolute top-0 right-0 z-[-1] opacity-40 lg:opacity-100">
+        <div className="absolute right-0 top-0 z-[-1] opacity-40 lg:opacity-100">
           {/* New Green Gradient Background with Updated SVG Design */}
           <svg
             width="500"

@@ -26,9 +26,9 @@ const Header = () => {
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
     const token = Cookies.get("token");
-    
+
     setIsLoggedIn(!!token);
-  });
+  }, []);
 
   const handleLogout = () => {
     Cookies.remove("token");

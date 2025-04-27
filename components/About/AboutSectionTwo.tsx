@@ -24,9 +24,9 @@ const AboutSectionTwo = () => {
                   Natural Language Interface
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg">
-                  Ask complex questions like "Show me the top 5 products sold
-                  last month" and get accurate results instantly—no SQL
-                  knowledge needed.
+                  Ask complex questions like Show me the top 5 products sold
+                  last month and get accurate results instantly—no SQL knowledge
+                  needed.
                 </p>
               </div>
               <div className="mb-9">

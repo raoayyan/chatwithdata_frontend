@@ -60,7 +60,7 @@ export default function ChatPage() {
             "give me the details of healthy server whose memory usage is less thatn 50",
             "is there is any error where SSL handshake failed",
             "give me all completed payments",
-            "which user Accessed Admin Panel?",
+            "which user performed the action of update_profile",
           ]);
         } else if (databaseName === "sample") {
           setSampleQuestions([

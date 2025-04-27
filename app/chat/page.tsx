@@ -1,12 +1,22 @@
 "use client";
-import { useSearchParams } from "next/navigation";
 
-export default function ChatPage() {
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+
+function ChatContent() {
   const searchParams = useSearchParams();
   const databaseName = searchParams.get("database");
   const databaseType = searchParams.get("type");
-  localStorage.setItem("databaseName", databaseName);
-  localStorage.setItem("databaseType", databaseType);
+
+  // Safely set localStorage only when component is mounted
+  useEffect(() => {
+    if (databaseName) {
+      localStorage.setItem("databaseName", databaseName);
+    }
+    if (databaseType) {
+      localStorage.setItem("databaseType", databaseType);
+    }
+  }, [databaseName, databaseType]);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center bg-lightgray">
@@ -17,5 +27,13 @@ export default function ChatPage() {
       )}
       <p className="mb-4 text-gray">Start a new chat to ask your questions!</p>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div>Loading Chat...</div>}>
+      <ChatContent />
+    </Suspense>
   );
 }
